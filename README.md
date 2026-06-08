@@ -58,7 +58,7 @@ Contextual Output
 |-------|-----------|-----------------|
 | **Backend Framework** | FastAPI (Python) | Performa asinkronus (`async`/`await`), validasi otomatis via Pydantic, Swagger UI built-in |
 | **AI Orchestration** | LangChain / Pydantic AI | Framework agen penalaran yang modular dan extensible |
-| **Database** | PostgreSQL / SQLite | Pengelolaan data spasial pertanian dan harga komoditas |
+| **Database** | PostgreSQL | Pengelolaan data spasial pertanian dan harga komoditas |
 | **ORM** | SQLAlchemy | Abstraksi database yang robust dan mendukung query kompleks |
 
 ---
@@ -70,7 +70,7 @@ Contextual Output
 ### Prasyarat
 
 - Python 3.10+
-- PostgreSQL (atau SQLite untuk development)
+- PostgreSQL
 
 ### Langkah Instalasi
 
