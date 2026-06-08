@@ -63,25 +63,6 @@ Contextual Output
 
 ---
 
-## 📁 Struktur Proyek
-
-```
-agroai/
-├── app/
-│   ├── api/            # Route & endpoint FastAPI
-│   ├── agents/         # Logika ReAct Agent & Tools
-│   ├── models/         # SQLAlchemy ORM models
-│   ├── schemas/        # Pydantic request/response schemas
-│   └── database/       # Koneksi & seed data
-├── data/
-│   ├── crops.json      # Data kecocokan tanaman per jenis tanah
-│   └── fertilizers.json # Tabel harga & kandungan pupuk
-├── tests/
-├── .env.example
-├── requirements.txt
-└── README.md
-```
-
 ---
 
 ## ⚙️ Instalasi & Menjalankan Proyek
@@ -155,25 +136,3 @@ POST /api/v1/recommend
   }
 }
 ```
-
----
-
-## 🤝 Kontribusi
-
-Kontribusi sangat disambut! Silakan buka *issue* terlebih dahulu untuk mendiskusikan perubahan besar yang ingin Anda buat.
-
-1. Fork repositori ini
-2. Buat branch fitur (`git checkout -b feature/nama-fitur`)
-3. Commit perubahan (`git commit -m 'feat: tambah fitur X'`)
-4. Push ke branch (`git push origin feature/nama-fitur`)
-5. Buka Pull Request
-
----
-
-## 📄 Lisensi
-
-Didistribusikan di bawah lisensi MIT. Lihat [`LICENSE`](LICENSE) untuk informasi lebih lanjut.
-
----
-
-<p align="center">Dibuat dengan ❤️ untuk para petani Indonesia</p>
