@@ -53,11 +53,47 @@ async def lifespan(app: FastAPI):
                 logger.info("Successfully seeded Crops database.")
 
             if db.query(Fertilizer).count() == 0:
+                # -------------------------------------------------------
+                # Harga seed mengikuti HET Pupuk Bersubsidi
+                # Permentan No. 47/SR.310/12/2017 Pasal 11 ayat (2)
+                # -------------------------------------------------------
                 fertilizers_seed = [
-                    Fertilizer(name="Urea", fertilizer_type="Single", n_content=46.0, p_content=0.0, k_content=0.0, price_per_kg=4500.0),
-                    Fertilizer(name="SP-36", fertilizer_type="Single", n_content=0.0, p_content=36.0, k_content=0.0, price_per_kg=5200.0),
-                    Fertilizer(name="KCl", fertilizer_type="Single", n_content=0.0, p_content=0.0, k_content=60.0, price_per_kg=8500.0),
-                    Fertilizer(name="NPK Phonska 15-15-15", fertilizer_type="Compound", n_content=15.0, p_content=15.0, k_content=15.0, price_per_kg=10000.0)
+                    Fertilizer(
+                        name="Urea",
+                        fertilizer_type="Single",
+                        n_content=46.0, p_content=0.0, k_content=0.0,
+                        price_per_kg=1800.0          # HET: Rp 1.800/kg
+                    ),
+                    Fertilizer(
+                        name="SP-36",
+                        fertilizer_type="Single",
+                        n_content=0.0, p_content=36.0, k_content=0.0,
+                        price_per_kg=2000.0          # HET: Rp 2.000/kg
+                    ),
+                    Fertilizer(
+                        name="KCl",
+                        fertilizer_type="Single",
+                        n_content=0.0, p_content=0.0, k_content=60.0,
+                        price_per_kg=9500.0          # Non-subsidi, estimasi harga pasar
+                    ),
+                    Fertilizer(
+                        name="NPK Phonska 15-15-15",
+                        fertilizer_type="Compound",
+                        n_content=15.0, p_content=15.0, k_content=15.0,
+                        price_per_kg=2300.0          # HET: Rp 2.300/kg
+                    ),
+                    Fertilizer(
+                        name="ZA",
+                        fertilizer_type="Single",
+                        n_content=21.0, p_content=0.0, k_content=0.0,
+                        price_per_kg=1400.0          # HET: Rp 1.400/kg
+                    ),
+                    Fertilizer(
+                        name="Organik",
+                        fertilizer_type="Organic",
+                        n_content=0.0, p_content=0.0, k_content=0.0,
+                        price_per_kg=500.0           # HET: Rp 500/kg
+                    ),
                 ]
                 db.add_all(fertilizers_seed)
                 db.commit()
@@ -97,7 +133,7 @@ ui_router = APIRouter(tags=["Web User Interface"])
 
 @ui_router.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
-    return templates.TemplateResponse("dashboard.html", {"request": request, "result": None})
+    return templates.TemplateResponse(request, "dashboard.html", {"result": None})
 
 @ui_router.post("/", response_class=HTMLResponse)
 async def handle_form_recommendation(
@@ -117,22 +153,27 @@ async def handle_form_recommendation(
         )
         
         # Panggil core AI Agent
-        recommendations = get_recommendation(req_data, db)
+        recommendations = await get_recommendation(req_data, db)
         
         return templates.TemplateResponse(
+            request,
             "dashboard.html", 
             {
-                "request": request, 
                 "result": recommendations,
+                "ai_mode": recommendations.get("ai_mode", "local"),
+                "reasoning_chain": recommendations.get("reasoning_chain", []),
+                "analysis_summary": recommendations.get("analysis_summary", ""),
+                "recommended_crops": recommendations.get("recommended_crops", []),
+                "fertilization_plan": recommendations.get("fertilization_plan"),
                 "input_values": req_data
             }
         )
     except Exception as e:
         logger.error(f"UI Recommendation Error: {str(e)}")
         return templates.TemplateResponse(
+            request,
             "dashboard.html", 
             {
-                "request": request, 
                 "error_message": f"Gagal memproses rekomendasi: {str(e)}",
                 "result": None
             }
@@ -147,7 +188,7 @@ api_router = APIRouter(prefix="/api/v1", tags=["REST API Endpoints"])
 @api_router.post("/recommend", response_model=RecommendationResponse)
 async def get_agro_recommendation_api(req: RecommendationRequest, db: Session = Depends(get_db)):
     try:
-        recommendations = get_recommendation(req, db)
+        recommendations = await get_recommendation(req, db)
         return recommendations
     except Exception as e:
         logger.error(f"API Recommendation Error: {str(e)}")

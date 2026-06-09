@@ -1,6 +1,6 @@
 FROM python:3.11-slim
 
-WORKDIR /workspace
+WORKDIR /code
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -8,9 +8,15 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements and install dependencies
+# Copy requirements
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+
+# PERBAIKAN UTAMA:
+# Bersihkan sisa-sisa kemasan google yang corrupt bawaan OS, upgrade pip, 
+# lalu pasang requirements secara paksa agar namespace google ter-render ulang dengan bersih.
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip uninstall -y google google-generativeai protobuf && \
+    pip install --no-cache-dir -r requirements.txt --force-reinstall
 
 # Copy the rest of the application code
 COPY . .

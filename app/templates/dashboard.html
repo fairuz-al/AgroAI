@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AgroAI — Sistem Rekomendasi Cerdas Komoditas Pertanian & Pemupukan Berbasis Artificial Intelligence">
+    <title>AgroAI — Intelligent Agricultural Recommendation</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>">
+</head>
+<body>
+
+    <!-- ========== HEADER ========== -->
+    <header class="header">
+        <div class="container header-inner">
+            <div class="logo">
+                <div class="logo-icon">🌱</div>
+                <span class="logo-text">AgroAI</span>
+                <span class="logo-badge">Fuzzy + Forward Chaining</span>
+            </div>
+            <div class="ai-status">
+                <div class="ai-status-dot"></div>
+                <span>AI Engine Active</span>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- ========== HERO & FORM ========== -->
+        <section class="hero">
+            <div class="container">
+                <h1>Rekomendasi Pertanian Cerdas</h1>
+                <p class="hero-subtitle">
+                    Sistem AI yang menganalisis kondisi lahan Anda menggunakan <strong>Fuzzy Logic</strong> dan <strong>Forward Chaining</strong> untuk memberikan rekomendasi komoditas terbaik beserta rencana pemupukan optimal.
+                </p>
+
+                <div class="form-card">
+                    <form method="POST" action="/" id="recommendation-form">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="soil_type">🌍 Jenis Tanah</label>
+                                <select name="soil_type" id="soil_type" class="form-control" required>
+                                    <option value="" disabled {% if not input_values %}selected{% endif %}>Pilih jenis tanah...</option>
+                                    <option value="Aluvial" {% if input_values and input_values.soil_type == 'Aluvial' %}selected{% endif %}>Aluvial</option>
+                                    <option value="Andosol" {% if input_values and input_values.soil_type == 'Andosol' %}selected{% endif %}>Andosol</option>
+                                    <option value="Pasir" {% if input_values and input_values.soil_type == 'Pasir' %}selected{% endif %}>Pasir</option>
+                                    <option value="Liat" {% if input_values and input_values.soil_type == 'Liat' %}selected{% endif %}>Liat</option>
+                                    <option value="Gambut" {% if input_values and input_values.soil_type == 'Gambut' %}selected{% endif %}>Gambut</option>
+                                    <option value="Laterit" {% if input_values and input_values.soil_type == 'Laterit' %}selected{% endif %}>Laterit</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="elevation_mdpl">⛰️ Ketinggian Lahan (mdpl)</label>
+                                <input type="number" name="elevation_mdpl" id="elevation_mdpl" class="form-control"
+                                       placeholder="contoh: 450"
+                                       value="{{ input_values.elevation_mdpl if input_values else '' }}"
+                                       min="0" max="5000" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="land_area_ha">📐 Luas Lahan (ha)</label>
+                                <input type="number" name="land_area_ha" id="land_area_ha" class="form-control"
+                                       placeholder="contoh: 2.5"
+                                       value="{{ input_values.land_area_ha if input_values else '' }}"
+                                       step="0.1" min="0.1" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="location">📍 Lokasi Wilayah</label>
+                                <input type="text" name="location" id="location" class="form-control"
+                                       placeholder="contoh: Jawa Tengah"
+                                       value="{{ input_values.location if input_values else '' }}" required>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-primary" id="submit-btn">
+                            <span class="btn-text">🧠 Analisis dengan AI</span>
+                            <div class="spinner"></div>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Feature cards shown when no result -->
+                {% if not result and not error_message %}
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <span class="feature-icon">🧠</span>
+                        <h3>Fuzzy Logic</h3>
+                        <p>Penilaian kecocokan menggunakan fungsi keanggotaan fuzzy dan inferensi Mamdani</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="feature-icon">⛓️</span>
+                        <h3>Forward Chaining</h3>
+                        <p>Mesin inferensi data-driven yang memproses fakta ke kesimpulan secara bertahap</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="feature-icon">💰</span>
+                        <h3>Optimasi Biaya</h3>
+                        <p>Perbandingan biaya pupuk tunggal vs majemuk dengan harga riil pasar</p>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </section>
+
+        <!-- ========== ERROR STATE ========== -->
+        {% if error_message %}
+        <div class="container">
+            <div class="error-banner">
+                <span>⚠️</span>
+                <span>{{ error_message }}</span>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- ========== RESULTS ========== -->
+        {% if result %}
+        <div class="container">
+
+            <!-- AI Mode Banner -->
+            <div class="ai-mode-banner {{ ai_mode }}">
+                {% if ai_mode == 'gemini' %}
+                    ✨ Diproses oleh Google Gemini AI
+                {% else %}
+                    ⚡ Diproses oleh Fuzzy Logic + Forward Chaining Engine
+                {% endif %}
+            </div>
+
+            <!-- Input Summary Chips -->
+            {% if input_values %}
+            <div class="input-summary">
+                <div class="input-chip">🌍 <strong>{{ input_values.soil_type }}</strong></div>
+                <div class="input-chip">⛰️ <strong>{{ input_values.elevation_mdpl }} mdpl</strong></div>
+                <div class="input-chip">📐 <strong>{{ input_values.land_area_ha }} ha</strong></div>
+                <div class="input-chip">📍 <strong>{{ input_values.location }}</strong></div>
+            </div>
+            {% endif %}
+
+            <!-- ========== AI REASONING CHAIN ========== -->
+            {% if reasoning_chain %}
+            <section class="reasoning-section">
+                <div class="section-header" style="text-align:center;">
+                    <h2>🧠 Proses Penalaran AI</h2>
+                    <p>Transparansi langkah-langkah analisis Fuzzy Logic & Forward Chaining</p>
+                </div>
+                <div class="reasoning-chain">
+                    {% for step in reasoning_chain %}
+                    <div class="chain-step">
+                        <div class="step-icon">{{ step.icon }}</div>
+                        <div class="step-content">
+                            <div class="step-number">Langkah {{ step.step }}</div>
+                            <h4>{{ step.title }}</h4>
+                            <p>{{ step.description }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+            <div class="section-divider"></div>
+            {% endif %}
+
+            <!-- ========== ANALYSIS SUMMARY ========== -->
+            {% if analysis_summary %}
+            <section style="padding: 2.5rem 0 0;">
+                <div class="analysis-summary">
+                    <div class="analysis-summary-header">
+                        <span>🔍</span> Ringkasan Analisis AI
+                    </div>
+                    <div class="analysis-summary-text">
+                        {{ analysis_summary }}
+                    </div>
+                </div>
+            </section>
+            {% endif %}
+
+            <!-- ========== CROP RECOMMENDATIONS ========== -->
+            {% if recommended_crops %}
+            <section class="crops-section">
+                <div class="section-header" style="text-align:center;">
+                    <h2>🌾 Rekomendasi Komoditas</h2>
+                    <p>Tanaman terbaik berdasarkan analisis kecocokan lahan Anda</p>
+                </div>
+                <div class="crops-grid">
+                    {% for crop in recommended_crops %}
+                    <div class="crop-card">
+                        <div class="crop-card-header">
+                            <div>
+                                <div class="crop-rank">Rank #{{ loop.index }}</div>
+                                <div class="crop-name">{{ crop.name }}</div>
+                            </div>
+                            <div class="score-ring" data-score="{{ crop.suitability_score }}">
+                                <svg viewBox="0 0 60 60">
+                                    <circle class="ring-bg" cx="30" cy="30" r="26"/>
+                                    <circle class="ring-fill" cx="30" cy="30" r="26"/>
+                                </svg>
+                                <div class="score-text">{{ (crop.suitability_score * 100) | int }}%</div>
+                            </div>
+                        </div>
+                        <div class="crop-price">
+                            💰 Rp {{ "{:,.0f}".format(crop.estimated_price_per_kg) }}/kg
+                        </div>
+                        <div class="crop-reasoning">
+                            {{ crop.reasoning }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+            <div class="section-divider"></div>
+            {% endif %}
+
+            <!-- ========== FERTILIZATION PLAN ========== -->
+            {% if fertilization_plan %}
+            <section class="fertilization-section">
+                <div class="section-header" style="text-align:center;">
+                    <h2>🧪 Rencana Pemupukan</h2>
+                    <p>Kebutuhan nutrisi N-P-K untuk setiap fase pertumbuhan</p>
+                </div>
+
+                <div class="phases-grid">
+                    <!-- Vegetative Phase -->
+                    <div class="phase-card vegetative">
+                        <div class="phase-label">🌿 Fase Pertumbuhan</div>
+                        <h3 class="phase-title">Fase Vegetatif</h3>
+                        <div class="nutrient-bars">
+                            <div class="nutrient-row">
+                                <span class="nutrient-label n">N</span>
+                                <div class="nutrient-bar-track">
+                                    <div class="nutrient-bar-fill n" data-width="{{ fertilization_plan.vegetative_phase.N.split(' ')[0] | float / 100 * 100 }}"></div>
+                                </div>
+                                <span class="nutrient-value">{{ fertilization_plan.vegetative_phase.N }}</span>
+                            </div>
+                            <div class="nutrient-row">
+                                <span class="nutrient-label p">P</span>
+                                <div class="nutrient-bar-track">
+                                    <div class="nutrient-bar-fill p" data-width="{{ fertilization_plan.vegetative_phase.P.split(' ')[0] | float / 100 * 100 }}"></div>
+                                </div>
+                                <span class="nutrient-value">{{ fertilization_plan.vegetative_phase.P }}</span>
+                            </div>
+                            <div class="nutrient-row">
+                                <span class="nutrient-label k">K</span>
+                                <div class="nutrient-bar-track">
+                                    <div class="nutrient-bar-fill k" data-width="{{ fertilization_plan.vegetative_phase.K.split(' ')[0] | float / 100 * 100 }}"></div>
+                                </div>
+                                <span class="nutrient-value">{{ fertilization_plan.vegetative_phase.K }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Generative Phase -->
+                    <div class="phase-card generative">
+                        <div class="phase-label">🌸 Fase Produksi</div>
+                        <h3 class="phase-title">Fase Generatif</h3>
+                        <div class="nutrient-bars">
+                            <div class="nutrient-row">
+                                <span class="nutrient-label n">N</span>
+                                <div class="nutrient-bar-track">
+                                    <div class="nutrient-bar-fill n" data-width="{{ fertilization_plan.generative_phase.N.split(' ')[0] | float / 100 * 100 }}"></div>
+                                </div>
+                                <span class="nutrient-value">{{ fertilization_plan.generative_phase.N }}</span>
+                            </div>
+                            <div class="nutrient-row">
+                                <span class="nutrient-label p">P</span>
+                                <div class="nutrient-bar-track">
+                                    <div class="nutrient-bar-fill p" data-width="{{ fertilization_plan.generative_phase.P.split(' ')[0] | float / 100 * 100 }}"></div>
+                                </div>
+                                <span class="nutrient-value">{{ fertilization_plan.generative_phase.P }}</span>
+                            </div>
+                            <div class="nutrient-row">
+                                <span class="nutrient-label k">K</span>
+                                <div class="nutrient-bar-track">
+                                    <div class="nutrient-bar-fill k" data-width="{{ fertilization_plan.generative_phase.K.split(' ')[0] | float / 100 * 100 }}"></div>
+                                </div>
+                                <span class="nutrient-value">{{ fertilization_plan.generative_phase.K }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <div class="section-divider"></div>
+
+            <!-- ========== COST COMPARISON ========== -->
+            {% if fertilization_plan.cost_comparison %}
+            {% set cost = fertilization_plan.cost_comparison %}
+            {% set npk_cost = cost.npk_compound.total_cost %}
+            {% set single_cost = cost.single_fertilizer_mix.total_cost %}
+            {% set max_cost = [npk_cost, single_cost] | max %}
+            <section class="cost-section">
+                <div class="section-header" style="text-align:center;">
+                    <h2>💰 Analisis Perbandingan Biaya</h2>
+                    <p>Perbandingan biaya pemupukan antara pupuk majemuk dan pupuk tunggal</p>
+                </div>
+
+                <div class="cost-comparison-card">
+                    {% if npk_cost != single_cost %}
+                    {% set diff = (npk_cost - single_cost) | abs %}
+                    {% set savings_pct = (diff / max_cost * 100) | round(1) %}
+                    <div class="savings-badge">
+                        💡 Hemat {{ savings_pct }}% — Selisih Rp {{ "{:,.0f}".format(diff) }}
+                    </div>
+                    {% endif %}
+
+                    <div class="cost-bars">
+                        <!-- NPK Compound -->
+                        <div class="cost-bar-item">
+                            <div class="cost-bar-header">
+                                <span class="cost-bar-label">🔵 {{ cost.npk_compound.label }}</span>
+                                <span class="cost-bar-amount {% if npk_cost <= single_cost %}cheaper{% else %}expensive{% endif %}">
+                                    Rp {{ "{:,.0f}".format(npk_cost) }}
+                                </span>
+                            </div>
+                            <div class="cost-bar-track">
+                                <div class="cost-bar-fill npk {% if npk_cost <= single_cost %}cheaper-bar{% endif %}"
+                                     data-width="{{ (npk_cost / max_cost * 100) if max_cost > 0 else 0 }}"></div>
+                            </div>
+                        </div>
+
+                        <!-- Single Fertilizer Mix -->
+                        <div class="cost-bar-item">
+                            <div class="cost-bar-header">
+                                <span class="cost-bar-label">🟢 {{ cost.single_fertilizer_mix.label }}</span>
+                                <span class="cost-bar-amount {% if single_cost <= npk_cost %}cheaper{% else %}expensive{% endif %}">
+                                    Rp {{ "{:,.0f}".format(single_cost) }}
+                                </span>
+                            </div>
+                            <div class="cost-bar-track">
+                                <div class="cost-bar-fill single {% if single_cost <= npk_cost %}cheaper-bar{% endif %}"
+                                     data-width="{{ (single_cost / max_cost * 100) if max_cost > 0 else 0 }}"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="cost-recommendation">
+                        <span class="rec-icon">💡</span>{{ cost.recommendation }}
+                    </div>
+                </div>
+            </section>
+            {% endif %}
+            {% endif %}
+
+        </div>
+        {% endif %}
+    </main>
+
+    <!-- ========== FOOTER ========== -->
+    <footer class="footer">
+        <div class="container footer-inner">
+            <div class="footer-text">
+                © 2026 AgroAI — Intelligent Seed &amp; Fertilizer Recommendation System
+            </div>
+            <div class="footer-tech">
+                <span class="footer-tech-badge">FastAPI</span>
+                <span class="footer-tech-badge">Fuzzy Logic</span>
+                <span class="footer-tech-badge">Forward Chaining</span>
+                <span class="footer-tech-badge">Gemini AI</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ========== SCRIPTS ========== -->
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+        // === Form Loading State ===
+        const form = document.getElementById('recommendation-form');
+        const btn = document.getElementById('submit-btn');
+        if (form && btn) {
+            form.addEventListener('submit', () => {
+                btn.classList.add('btn-loading');
+                btn.disabled = true;
+            });
+        }
+
+        // === Animate Score Rings ===
+        document.querySelectorAll('.score-ring').forEach(ring => {
+            const score = parseFloat(ring.dataset.score) || 0;
+            const circumference = 2 * Math.PI * 26; // r=26
+            const offset = circumference * (1 - score);
+            const fill = ring.querySelector('.ring-fill');
+            if (fill) {
+                setTimeout(() => {
+                    fill.style.strokeDashoffset = offset;
+                }, 300);
+            }
+        });
+
+        // === Animate Nutrient Bars ===
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const bars = entry.target.querySelectorAll('.nutrient-bar-fill, .cost-bar-fill');
+                    bars.forEach(bar => {
+                        const width = bar.dataset.width;
+                        if (width) {
+                            setTimeout(() => {
+                                bar.style.width = Math.min(parseFloat(width), 100) + '%';
+                            }, 200);
+                        }
+                    });
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.2 });
+
+        document.querySelectorAll('.nutrient-bars, .cost-bars').forEach(el => {
+            observer.observe(el);
+        });
+
+        // === Smooth scroll to results ===
+        {% if result %}
+        const aiModeBanner = document.querySelector('.ai-mode-banner');
+        if (aiModeBanner) {
+            setTimeout(() => {
+                aiModeBanner.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 400);
+        }
+        {% endif %}
+
+    });
+    </script>
+
+</body>
+</html>
