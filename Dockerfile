@@ -11,12 +11,9 @@ RUN apt-get update && apt-get install -y \
 # Copy requirements
 COPY requirements.txt .
 
-# PERBAIKAN UTAMA:
-# Bersihkan sisa-sisa kemasan google yang corrupt bawaan OS, upgrade pip, 
-# lalu pasang requirements secara paksa agar namespace google ter-render ulang dengan bersih.
+# Install Python dependencies
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip uninstall -y google google-generativeai protobuf && \
-    pip install --no-cache-dir -r requirements.txt --force-reinstall
+    pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the application code
 COPY . .
