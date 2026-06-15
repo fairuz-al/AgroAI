@@ -1,32 +1,37 @@
-version: '3.8'
-
 services:
   web:
     build: .
+    container_name: agroai_web
     ports:
       - "8000:8000"
     volumes:
-      - .:/workspace
+      - .:/code
     environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
-      - GEMINI_API_KEY
+      # Kita langsung hardcode host-nya ke service 'db' milik docker
+      - DATABASE_URL=postgresql://postgres:secret_password@db:5432/agroai_db
+    env_file:
+      - .env
     depends_on:
       db:
-        condition: service_healthy
+        condition: service_healthy # Menunggu DB benar-benar siap total sebelum web jalan
 
   db:
     image: postgres:15-alpine
+    container_name: agroai_postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=secret_password
+      - POSTGRES_DB=agroai_db
     ports:
       - "5432:5432"
-    environment:
-      - POSTGRES_USER
-      - POSTGRES_PASSWORD
-      - POSTGRES_DB
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
     healthcheck:
       # Changed "-U postgres" to "-U ${POSTGRES_USER}" so it checks using "agroai"
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+
       interval: 5s
       timeout: 5s
       retries: 5
