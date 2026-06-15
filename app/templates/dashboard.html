@@ -3,420 +3,575 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="AgroAI — Sistem Rekomendasi Cerdas Komoditas Pertanian & Pemupukan Berbasis Artificial Intelligence">
-    <title>AgroAI — Intelligent Agricultural Recommendation</title>
-    <link rel="stylesheet" href="/static/css/style.css">
+    <meta name="description" content="AgroAI — Sistem Rekomendasi Cerdas Komoditas Pertanian Berbasis AI">
+    <title>AgroAI — Analisis Lahan Cerdas</title>
+    <link rel="stylesheet" href="/static/css/style.css?v=3">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>">
+    {% if not google_maps_api_key %}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    {% endif %}
 </head>
 <body>
 
-    <!-- ========== HEADER ========== -->
-    <header class="header">
-        <div class="container header-inner">
-            <div class="logo">
-                <div class="logo-icon">🌱</div>
-                <span class="logo-text">AgroAI</span>
-                <span class="logo-badge">Fuzzy + Forward Chaining</span>
-            </div>
-            <div class="ai-status">
-                <div class="ai-status-dot"></div>
-                <span>AI Engine Active</span>
+    <!-- ========== SIDEBAR ========== -->
+    <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">☰</button>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-icon">✓</div>
+            <div class="brand-text">
+                <span class="brand-name">AgroAI</span>
+                <span class="brand-tag">FUZZY + FORWARD</span>
             </div>
         </div>
-    </header>
+        <nav class="sidebar-nav">
+            <a href="/" class="sidebar-nav-item active">
+                <span class="nav-icon">📊</span>
+                Dashboard Analisis
+            </a>
+            <a href="/history" class="sidebar-nav-item">
+                <span class="nav-icon">🕐</span>
+                History
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <span class="status-dot"></span>
+            <span class="status-text">AI ENGINE ACTIVE</span>
+        </div>
+    </aside>
 
-    <main>
-        <!-- ========== HERO & FORM ========== -->
-        <section class="hero">
-            <div class="container">
-                <h1>Rekomendasi Pertanian Cerdas</h1>
-                <p class="hero-subtitle">
-                    Sistem AI yang menganalisis kondisi lahan Anda menggunakan <strong>Fuzzy Logic</strong> dan <strong>Forward Chaining</strong> untuk memberikan rekomendasi komoditas terbaik beserta rencana pemupukan optimal.
-                </p>
+    <!-- ========== MAIN CONTENT ========== -->
+    <div class="main-content">
 
-                <div class="form-card">
-                    <form method="POST" action="/" id="recommendation-form">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="soil_type">🌍 Jenis Tanah</label>
-                                <select name="soil_type" id="soil_type" class="form-control" required>
-                                    <option value="" disabled {% if not input_values %}selected{% endif %}>Pilih jenis tanah...</option>
-                                    <option value="Aluvial" {% if input_values and input_values.soil_type == 'Aluvial' %}selected{% endif %}>Aluvial</option>
-                                    <option value="Andosol" {% if input_values and input_values.soil_type == 'Andosol' %}selected{% endif %}>Andosol</option>
-                                    <option value="Pasir" {% if input_values and input_values.soil_type == 'Pasir' %}selected{% endif %}>Pasir</option>
-                                    <option value="Liat" {% if input_values and input_values.soil_type == 'Liat' %}selected{% endif %}>Liat</option>
-                                    <option value="Gambut" {% if input_values and input_values.soil_type == 'Gambut' %}selected{% endif %}>Gambut</option>
-                                    <option value="Laterit" {% if input_values and input_values.soil_type == 'Laterit' %}selected{% endif %}>Laterit</option>
-                                </select>
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="page-header-left">
+                <h1>Analisis Lahan Cerdas</h1>
+                <p>Selamat datang kembali. Silakan perbarui koordinat untuk analisis terbaru.</p>
+            </div>
+            <div class="status-badge">
+                Status: <span class="optimal">Optimal</span>
+            </div>
+        </div>
+
+        <!-- Error State -->
+        {% if error_message %}
+        <div class="error-banner">
+            <span>⚠️</span>
+            <span>{{ error_message }}</span>
+        </div>
+        {% endif %}
+
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid">
+
+            <!-- ===== LEFT COLUMN: Data Input ===== -->
+            <div class="left-column">
+                <div class="panel">
+                    <div class="panel-header green">
+                        📍 DATA INPUT LAHAN
+                        <span class="badge">AUTO-GPS</span>
+                    </div>
+                    <div class="panel-body">
+                        <form method="POST" action="/" id="recommendation-form">
+                            <!-- GPS Status -->
+                            <div class="gps-status" id="gps-status">
+                                <span class="dot"></span>
+                                <span>LIVE GPS — Menunggu koordinat...</span>
                             </div>
 
-                            <div class="form-group">
-                                <label for="elevation_mdpl">⛰️ Ketinggian Lahan (mdpl)</label>
-                                <input type="number" name="elevation_mdpl" id="elevation_mdpl" class="form-control"
-                                       placeholder="contoh: 450"
-                                       value="{{ input_values.elevation_mdpl if input_values else '' }}"
-                                       min="0" max="5000" required>
+                            <!-- Map -->
+                            <div class="gps-map-container">
+                                <div id="gps-map" class="gps-map"></div>
+                                <div id="map-overlay-info" class="map-overlay-info">
+                                    <span id="map-location-text">Menunggu koordinat GPS...</span>
+                                </div>
                             </div>
 
-                            <div class="form-group">
-                                <label for="land_area_ha">📐 Luas Lahan (ha)</label>
+                            <!-- Coordinate Fields -->
+                            <div class="gps-fields">
+                                <div class="gps-field">
+                                    <label>Latitude</label>
+                                    <input type="number" step="any" name="latitude" id="latitude"
+                                           value="{{ input_values.latitude if input_values else '' }}"
+                                           placeholder="-7.571211" required>
+                                </div>
+                                <div class="gps-field">
+                                    <label>Longitude</label>
+                                    <input type="number" step="any" name="longitude" id="longitude"
+                                           value="{{ input_values.longitude if input_values else '' }}"
+                                           placeholder="110.824715" required>
+                                </div>
+                            </div>
+
+                            <!-- GPS Sync Button -->
+                            <button type="button" id="refresh-gps-btn" class="btn-gps-sync">
+                                🔄 Sinkronkan GPS Ulang
+                            </button>
+
+                            <!-- Land Area -->
+                            <div class="land-area-section">
+                                <label for="land_area_ha">LUAS LAHAN (HEKTAR)</label>
+                                <div class="land-area-display">
+                                    {{ input_values.land_area_ha if input_values else '—' }} <span>ha</span>
+                                </div>
                                 <input type="number" name="land_area_ha" id="land_area_ha" class="form-control"
                                        placeholder="contoh: 2.5"
                                        value="{{ input_values.land_area_ha if input_values else '' }}"
                                        step="0.1" min="0.1" required>
                             </div>
 
-                            <div class="form-group">
-                                <label for="location">📍 Lokasi Wilayah</label>
-                                <input type="text" name="location" id="location" class="form-control"
-                                       placeholder="contoh: Jawa Tengah"
-                                       value="{{ input_values.location if input_values else '' }}" required>
-                            </div>
-                        </div>
-
-                        <button type="submit" class="btn-primary" id="submit-btn">
-                            <span class="btn-text">🧠 Analisis dengan AI</span>
-                            <div class="spinner"></div>
-                        </button>
-                    </form>
+                            <!-- Submit Button -->
+                            <button type="submit" class="btn-primary" id="submit-btn">
+                                <span class="btn-text">🧠 JALANKAN ANALISIS AI</span>
+                                <div class="spinner"></div>
+                            </button>
+                        </form>
+                    </div>
                 </div>
 
-                <!-- Feature cards shown when no result -->
+                <!-- Metadata Panel (shown after analysis) -->
+                {% if input_values %}
+                <div class="panel" style="margin-top: 1rem;">
+                    <div class="panel-header dark">📋 METADATA LAHAN</div>
+                    <div class="panel-body">
+                        <div class="metadata-grid">
+                            <div class="meta-card">
+                                <div class="meta-icon">⛰️</div>
+                                <div class="meta-label">Ketinggian</div>
+                                <div class="meta-value">{{ input_values.elevation_mdpl }} mdpl</div>
+                            </div>
+                            <div class="meta-card">
+                                <div class="meta-icon">🌍</div>
+                                <div class="meta-label">Jenis Tanah</div>
+                                <div class="meta-value">{{ input_values.soil_type }}</div>
+                            </div>
+                            <div class="meta-card">
+                                <div class="meta-icon">📍</div>
+                                <div class="meta-label">Wilayah</div>
+                                <div class="meta-value">{{ input_values.location }}</div>
+                            </div>
+                            <div class="meta-card">
+                                <div class="meta-icon">🧪</div>
+                                <div class="meta-label">Status</div>
+                                <div class="meta-value">Teranalisis</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- ===== RIGHT COLUMN: Results ===== -->
+            <div class="right-column">
+
                 {% if not result and not error_message %}
-                <div class="features-grid">
-                    <div class="feature-card">
-                        <span class="feature-icon">🧠</span>
-                        <h3>Fuzzy Logic</h3>
-                        <p>Penilaian kecocokan menggunakan fungsi keanggotaan fuzzy dan inferensi Mamdani</p>
-                    </div>
-                    <div class="feature-card">
-                        <span class="feature-icon">⛓️</span>
-                        <h3>Forward Chaining</h3>
-                        <p>Mesin inferensi data-driven yang memproses fakta ke kesimpulan secara bertahap</p>
-                    </div>
-                    <div class="feature-card">
-                        <span class="feature-icon">💰</span>
-                        <h3>Optimasi Biaya</h3>
-                        <p>Perbandingan biaya pupuk tunggal vs majemuk dengan harga riil pasar</p>
-                    </div>
-                </div>
-                {% endif %}
-            </div>
-        </section>
+                <!-- Empty State: AI Info Box -->
+                <div class="panel">
+                    <div class="panel-header blue">ℹ️ RINGKASAN ANALISIS AI</div>
+                    <div class="panel-body">
+                        <div class="ai-info-box">
+                            <div class="info-title">Sistem AI AgroAI</div>
+                            <div class="info-text">
+                                Masukkan koordinat GPS dan luas lahan Anda, lalu klik <strong>"Jalankan Analisis AI"</strong>
+                                untuk mendapatkan rekomendasi komoditas terbaik beserta rencana pemupukan optimal
+                                menggunakan <strong>Fuzzy Logic</strong> dan <strong>Forward Chaining</strong>.
+                            </div>
+                        </div>
 
-        <!-- ========== ERROR STATE ========== -->
-        {% if error_message %}
-        <div class="container">
-            <div class="error-banner">
-                <span>⚠️</span>
-                <span>{{ error_message }}</span>
-            </div>
-        </div>
-        {% endif %}
-
-        <!-- ========== RESULTS ========== -->
-        {% if result %}
-        <div class="container">
-
-            <!-- AI Mode Banner -->
-            <div class="ai-mode-banner {{ ai_mode }}">
-                {% if ai_mode == 'gemini' %}
-                    ✨ Diproses oleh Google Gemini AI
-                {% else %}
-                    ⚡ Diproses oleh Fuzzy Logic + Forward Chaining Engine
-                {% endif %}
-            </div>
-
-            <!-- Input Summary Chips -->
-            {% if input_values %}
-            <div class="input-summary">
-                <div class="input-chip">🌍 <strong>{{ input_values.soil_type }}</strong></div>
-                <div class="input-chip">⛰️ <strong>{{ input_values.elevation_mdpl }} mdpl</strong></div>
-                <div class="input-chip">📐 <strong>{{ input_values.land_area_ha }} ha</strong></div>
-                <div class="input-chip">📍 <strong>{{ input_values.location }}</strong></div>
-            </div>
-            {% endif %}
-
-            <!-- ========== AI REASONING CHAIN ========== -->
-            {% if reasoning_chain %}
-            <section class="reasoning-section">
-                <div class="section-header" style="text-align:center;">
-                    <h2>🧠 Proses Penalaran AI</h2>
-                    <p>Transparansi langkah-langkah analisis Fuzzy Logic & Forward Chaining</p>
-                </div>
-                <div class="reasoning-chain">
-                    {% for step in reasoning_chain %}
-                    <div class="chain-step">
-                        <div class="step-icon">{{ step.icon }}</div>
-                        <div class="step-content">
-                            <div class="step-number">Langkah {{ step.step }}</div>
-                            <h4>{{ step.title }}</h4>
-                            <p>{{ step.description }}</p>
+                        <!-- AI Steps Preview -->
+                        <div class="ai-steps">
+                            <div class="ai-step">
+                                <div class="step-dot">1</div>
+                                <div class="step-content">
+                                    <div class="step-label">Langkah 1</div>
+                                    <h4 class="text-green">Data Retrieval & Market Sync</h4>
+                                    <p>Menyinkronkan harga jual BAPPEBTI dengan database komoditas lokal.</p>
+                                </div>
+                            </div>
+                            <div class="ai-step">
+                                <div class="step-dot red">2</div>
+                                <div class="step-content">
+                                    <div class="step-label">Langkah 2</div>
+                                    <h4 class="text-red">Neural AI Inference</h4>
+                                    <p>Pemrosesan spesifik variabel cuaca & tanah melalui Fuzzy Logic engine.</p>
+                                </div>
+                            </div>
+                            <div class="ai-step">
+                                <div class="step-dot">3</div>
+                                <div class="step-content">
+                                    <div class="step-label">Langkah 3</div>
+                                    <h4 class="text-green">Financial Optimisation</h4>
+                                    <p>Kalkulasi ROI dan perbandingan modal input (NPK vs Tunggal).</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    {% endfor %}
                 </div>
-            </section>
-            <div class="section-divider"></div>
-            {% endif %}
+                {% endif %}
 
-            <!-- ========== ANALYSIS SUMMARY ========== -->
-            {% if analysis_summary %}
-            <section style="padding: 2.5rem 0 0;">
-                <div class="analysis-summary">
-                    <div class="analysis-summary-header">
-                        <span>🔍</span> Ringkasan Analisis AI
-                    </div>
-                    <div class="analysis-summary-text">
-                        {{ analysis_summary }}
+                {% if result %}
+                <!-- AI Mode Banner -->
+                <div class="panel" style="margin-bottom: 0;">
+                    <div class="panel-header {{ 'blue' if ai_mode == 'gemini' else 'orange' if ai_mode == 'groq' else 'green' }}">
+                        {% if ai_mode == 'gemini' %}
+                            ✨ Diproses oleh Google Gemini AI
+                        {% elif ai_mode == 'groq' %}
+                            🦙 Diproses oleh Groq AI (Llama 3.3 70B)
+                        {% else %}
+                            ⚡ Diproses oleh Fuzzy Logic + Forward Chaining Engine
+                        {% endif %}
                     </div>
                 </div>
-            </section>
-            {% endif %}
 
-            <!-- ========== CROP RECOMMENDATIONS ========== -->
-            {% if recommended_crops %}
-            <section class="crops-section">
-                <div class="section-header" style="text-align:center;">
-                    <h2>🌾 Rekomendasi Komoditas</h2>
-                    <p>Tanaman terbaik berdasarkan analisis kecocokan lahan Anda</p>
+                <!-- Analysis Summary -->
+                {% if analysis_summary %}
+                <div class="panel">
+                    <div class="panel-header blue">ℹ️ RINGKASAN ANALISIS AI</div>
+                    <div class="panel-body">
+                        <div class="ai-info-box" style="margin-bottom: 0;">
+                            <div class="info-text">{{ analysis_summary }}</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="crops-grid">
+                {% endif %}
+
+                <!-- AI Reasoning Steps -->
+                {% if reasoning_chain %}
+                <div class="panel">
+                    <div class="panel-header dark">🧠 PENALARAN AI (FUZZY LOGIC)</div>
+                    <div class="panel-body">
+                        <div class="ai-steps">
+                            {% for step in reasoning_chain %}
+                            <div class="ai-step {% if loop.last %}last{% endif %}">
+                                <div class="step-dot {% if loop.index == 2 %}red{% endif %}">{{ step.step }}</div>
+                                <div class="step-content">
+                                    <div class="step-label">Langkah {{ step.step }}</div>
+                                    <h4 class="{{ 'text-red' if loop.index == 2 else 'text-green' }}">{{ step.title }}</h4>
+                                    <p>{{ step.description }}</p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Recommendations -->
+                {% if recommended_crops %}
+                <div class="recommendations">
                     {% for crop in recommended_crops %}
-                    <div class="crop-card">
-                        <div class="crop-card-header">
-                            <div>
-                                <div class="crop-rank">Rank #{{ loop.index }}</div>
-                                <div class="crop-name">{{ crop.name }}</div>
-                            </div>
-                            <div class="score-ring" data-score="{{ crop.suitability_score }}">
-                                <svg viewBox="0 0 60 60">
-                                    <circle class="ring-bg" cx="30" cy="30" r="26"/>
-                                    <circle class="ring-fill" cx="30" cy="30" r="26"/>
+                    <div class="rec-card-wrapper">
+                        <div class="rec-card">
+                            <!-- Score Ring -->
+                            <div class="rec-ring" data-score="{{ crop.suitability_score }}">
+                                <svg viewBox="0 0 56 56">
+                                    <circle class="ring-bg" cx="28" cy="28" r="24"/>
+                                    <circle class="ring-fill" cx="28" cy="28" r="24"/>
                                 </svg>
-                                <div class="score-text">{{ (crop.suitability_score * 100) | int }}%</div>
+                                <div class="ring-text">{{ (crop.suitability_score * 100) | int }}%</div>
                             </div>
+
+                            <!-- Info -->
+                            <div class="rec-info">
+                                <div class="rec-rank">RANK #{{ loop.index }}{% if loop.first %} — TERATAS{% endif %}</div>
+                                <div class="rec-name">{{ crop.name }}</div>
+                                <div class="rec-price {{ 'orange' if loop.first else 'blue' }}">
+                                    {{ crop.estimated_price_per_kg_str }}/kg
+                                </div>
+                                <div class="rec-desc">{{ crop.reasoning }}</div>
+                            </div>
+
+                            <!-- Action Button -->
+                            <button class="rec-btn {{ 'green' if loop.first else 'gray' }}" onclick="toggleDetail(this)">
+                                {% if loop.first %}LIHAT RINCIAN PROFIT →{% else %}RINCIAN →{% endif %}
+                            </button>
                         </div>
-                        <div class="crop-price">
-                            💰 Rp {{ "{:,.0f}".format(crop.estimated_price_per_kg) }}/kg
-                        </div>
-                        <div class="crop-reasoning">
-                            {{ crop.reasoning }}
+
+                        <!-- Expandable Detail Section -->
+                        <div class="rec-detail" style="display:none;">
+                            <div class="rec-detail-inner">
+                                <h4 style="font-size:.82rem; font-weight:700; margin-bottom:.75rem; color:var(--text-primary);">💰 Estimasi Finansial — {{ crop.name }}</h4>
+                                
+                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:.75rem; margin-bottom:.75rem;">
+                                    <div style="padding:.6rem; background:var(--primary-bg); border-radius:var(--radius-sm); border:1px solid var(--primary-border);">
+                                        <div style="font-size:.65rem; color:var(--text-tertiary); text-transform:uppercase; font-weight:600;">Pendapatan Panen</div>
+                                        <div style="font-size:.95rem; font-weight:700; color:var(--primary); font-family:var(--font-mono);">{{ crop.harvest_revenue_str }}</div>
+                                        <div style="font-size:.68rem; color:var(--text-tertiary);">{{ "{:,.0f}".format(crop.yield_per_ha) }} kg/ha × {{ input_values.land_area_ha }} ha × {{ crop.estimated_price_per_kg_str }}/kg</div>
+                                    </div>
+                                    <div style="padding:.6rem; background:rgba(239,68,68,0.05); border-radius:var(--radius-sm); border:1px solid rgba(239,68,68,0.15);">
+                                        <div style="font-size:.65rem; color:var(--text-tertiary); text-transform:uppercase; font-weight:600;">Biaya Bibit</div>
+                                        <div style="font-size:.95rem; font-weight:700; color:var(--accent-red); font-family:var(--font-mono);">{{ crop.seed_cost_total_str }}</div>
+                                        <div style="font-size:.68rem; color:var(--text-tertiary);">{{ crop.seed_cost_per_ha_str }}/ha × {{ input_values.land_area_ha }} ha</div>
+                                    </div>
+                                </div>
+
+                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:.75rem; margin-bottom:.75rem;">
+                                    <div style="padding:.6rem; background:var(--bg-input); border-radius:var(--radius-sm); border-left:3px solid var(--primary);">
+                                        <div style="font-size:.65rem; color:var(--text-tertiary); text-transform:uppercase; font-weight:600;">🟢 Pupuk Tunggal</div>
+                                        <div style="font-size:.68rem; color:var(--text-secondary); margin:.3rem 0;">Urea: {{ crop.fertilizer_urea_kg_str }} kg · SP-36: {{ crop.fertilizer_sp36_kg_str }} kg · KCl: {{ crop.fertilizer_kcl_kg_str }} kg</div>
+                                        <div style="font-size:.82rem; font-weight:700; color:var(--text-primary); font-family:var(--font-mono);">Biaya: {{ crop.fertilizer_cost_single_str }}</div>
+                                        <div style="font-size:.88rem; font-weight:800; margin-top:.3rem; {% if crop.profit_single >= crop.profit_npk %}color:var(--primary);{% else %}color:var(--text-secondary);{% endif %} font-family:var(--font-mono);">
+                                            Profit: {{ crop.profit_single_str }}
+                                            {% if crop.profit_single >= crop.profit_npk %}<span style="font-size:.55rem; padding:1px 6px; border-radius:var(--radius-full); background:var(--primary-bg); color:var(--primary); border:1px solid var(--primary-border); font-weight:700;">TERBAIK</span>{% endif %}
+                                        </div>
+                                    </div>
+                                    <div style="padding:.6rem; background:var(--bg-input); border-radius:var(--radius-sm); border-left:3px solid var(--accent-blue);">
+                                        <div style="font-size:.65rem; color:var(--text-tertiary); text-transform:uppercase; font-weight:600;">🔵 NPK Majemuk</div>
+                                        <div style="font-size:.68rem; color:var(--text-secondary); margin:.3rem 0;">NPK Phonska: {{ crop.fertilizer_qty_npk_str }} kg</div>
+                                        <div style="font-size:.82rem; font-weight:700; color:var(--text-primary); font-family:var(--font-mono);">Biaya: {{ crop.fertilizer_cost_npk_str }}</div>
+                                        <div style="font-size:.88rem; font-weight:800; margin-top:.3rem; {% if crop.profit_npk > crop.profit_single %}color:var(--primary);{% else %}color:var(--text-secondary);{% endif %} font-family:var(--font-mono);">
+                                            Profit: {{ crop.profit_npk_str }}
+                                            {% if crop.profit_npk > crop.profit_single %}<span style="font-size:.55rem; padding:1px 6px; border-radius:var(--radius-full); background:var(--primary-bg); color:var(--primary); border:1px solid var(--primary-border); font-weight:700;">TERBAIK</span>{% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     {% endfor %}
                 </div>
-            </section>
-            <div class="section-divider"></div>
-            {% endif %}
+                {% endif %}
 
-            <!-- ========== FERTILIZATION PLAN ========== -->
-            {% if fertilization_plan %}
-            <section class="fertilization-section">
-                <div class="section-header" style="text-align:center;">
-                    <h2>🧪 Rencana Pemupukan</h2>
-                    <p>Kebutuhan nutrisi N-P-K untuk setiap fase pertumbuhan</p>
-                </div>
-
-                <div class="phases-grid">
-                    <!-- Vegetative Phase -->
-                    <div class="phase-card vegetative">
-                        <div class="phase-label">🌿 Fase Pertumbuhan</div>
-                        <h3 class="phase-title">Fase Vegetatif</h3>
-                        <div class="nutrient-bars">
-                            <div class="nutrient-row">
-                                <span class="nutrient-label n">N</span>
-                                <div class="nutrient-bar-track">
-                                    <div class="nutrient-bar-fill n" data-width="{{ fertilization_plan.vegetative_phase.N.split(' ')[0] | float / 100 * 100 }}"></div>
+                <!-- Fertilization Plan -->
+                {% if fertilization_plan %}
+                <div class="panel">
+                    <div class="panel-header green">🧪 RENCANA PEMUPUKAN</div>
+                    <div class="panel-body">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <!-- Vegetative -->
+                            <div>
+                                <h4 style="font-size: .85rem; margin-bottom: .75rem; color: var(--primary);">🌿 Fase Vegetatif</h4>
+                                <div style="display: flex; flex-direction: column; gap: .4rem;">
+                                    {% set veg = fertilization_plan.vegetative_phase %}
+                                    <div style="display: flex; justify-content: space-between; font-size: .8rem;">
+                                        <span style="color: #10b981; font-weight: 700;">N</span>
+                                        <span style="color: var(--text-secondary);">{{ veg.N }}</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; font-size: .8rem;">
+                                        <span style="color: #3b82f6; font-weight: 700;">P</span>
+                                        <span style="color: var(--text-secondary);">{{ veg.P }}</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; font-size: .8rem;">
+                                        <span style="color: #f59e0b; font-weight: 700;">K</span>
+                                        <span style="color: var(--text-secondary);">{{ veg.K }}</span>
+                                    </div>
                                 </div>
-                                <span class="nutrient-value">{{ fertilization_plan.vegetative_phase.N }}</span>
                             </div>
-                            <div class="nutrient-row">
-                                <span class="nutrient-label p">P</span>
-                                <div class="nutrient-bar-track">
-                                    <div class="nutrient-bar-fill p" data-width="{{ fertilization_plan.vegetative_phase.P.split(' ')[0] | float / 100 * 100 }}"></div>
+                            <!-- Generative -->
+                            <div>
+                                <h4 style="font-size: .85rem; margin-bottom: .75rem; color: var(--accent-orange);">🌸 Fase Generatif</h4>
+                                <div style="display: flex; flex-direction: column; gap: .4rem;">
+                                    {% set gen = fertilization_plan.generative_phase %}
+                                    <div style="display: flex; justify-content: space-between; font-size: .8rem;">
+                                        <span style="color: #10b981; font-weight: 700;">N</span>
+                                        <span style="color: var(--text-secondary);">{{ gen.N }}</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; font-size: .8rem;">
+                                        <span style="color: #3b82f6; font-weight: 700;">P</span>
+                                        <span style="color: var(--text-secondary);">{{ gen.P }}</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; font-size: .8rem;">
+                                        <span style="color: #f59e0b; font-weight: 700;">K</span>
+                                        <span style="color: var(--text-secondary);">{{ gen.K }}</span>
+                                    </div>
                                 </div>
-                                <span class="nutrient-value">{{ fertilization_plan.vegetative_phase.P }}</span>
-                            </div>
-                            <div class="nutrient-row">
-                                <span class="nutrient-label k">K</span>
-                                <div class="nutrient-bar-track">
-                                    <div class="nutrient-bar-fill k" data-width="{{ fertilization_plan.vegetative_phase.K.split(' ')[0] | float / 100 * 100 }}"></div>
-                                </div>
-                                <span class="nutrient-value">{{ fertilization_plan.vegetative_phase.K }}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Generative Phase -->
-                    <div class="phase-card generative">
-                        <div class="phase-label">🌸 Fase Produksi</div>
-                        <h3 class="phase-title">Fase Generatif</h3>
-                        <div class="nutrient-bars">
-                            <div class="nutrient-row">
-                                <span class="nutrient-label n">N</span>
-                                <div class="nutrient-bar-track">
-                                    <div class="nutrient-bar-fill n" data-width="{{ fertilization_plan.generative_phase.N.split(' ')[0] | float / 100 * 100 }}"></div>
-                                </div>
-                                <span class="nutrient-value">{{ fertilization_plan.generative_phase.N }}</span>
-                            </div>
-                            <div class="nutrient-row">
-                                <span class="nutrient-label p">P</span>
-                                <div class="nutrient-bar-track">
-                                    <div class="nutrient-bar-fill p" data-width="{{ fertilization_plan.generative_phase.P.split(' ')[0] | float / 100 * 100 }}"></div>
-                                </div>
-                                <span class="nutrient-value">{{ fertilization_plan.generative_phase.P }}</span>
-                            </div>
-                            <div class="nutrient-row">
-                                <span class="nutrient-label k">K</span>
-                                <div class="nutrient-bar-track">
-                                    <div class="nutrient-bar-fill k" data-width="{{ fertilization_plan.generative_phase.K.split(' ')[0] | float / 100 * 100 }}"></div>
-                                </div>
-                                <span class="nutrient-value">{{ fertilization_plan.generative_phase.K }}</span>
                             </div>
                         </div>
                     </div>
                 </div>
-            </section>
-            <div class="section-divider"></div>
+                {% endif %}
 
-            <!-- ========== COST COMPARISON ========== -->
-            {% if fertilization_plan.cost_comparison %}
-            {% set cost = fertilization_plan.cost_comparison %}
-            {% set npk_cost = cost.npk_compound.total_cost %}
-            {% set single_cost = cost.single_fertilizer_mix.total_cost %}
-            {% set max_cost = [npk_cost, single_cost] | max %}
-            <section class="cost-section">
-                <div class="section-header" style="text-align:center;">
-                    <h2>💰 Analisis Perbandingan Biaya</h2>
-                    <p>Perbandingan biaya pemupukan antara pupuk majemuk dan pupuk tunggal</p>
+                {% endif %}
+
+                <!-- AI Engine Status -->
+                <div class="engine-status">
+                    <span class="dot"></span>
+                    <span class="label">AI ENGINE ACTIVE</span>
+                    <span class="desc">
+                        {% if result and ai_mode == 'gemini' %}
+                        Google Gemini AI telah selesai memproses data agronomis Anda.
+                        {% elif result and ai_mode == 'groq' %}
+                        Groq Llama 3.3 70B telah selesai memproses data agronomis Anda.
+                        {% elif result %}
+                        Fuzzy Logic Engine telah selesai memproses data agronomis Anda.
+                        {% else %}
+                        Sistem siap memproses data agronomis Anda.
+                        {% endif %}
+                    </span>
                 </div>
-
-                <div class="cost-comparison-card">
-                    {% if npk_cost != single_cost %}
-                    {% set diff = (npk_cost - single_cost) | abs %}
-                    {% set savings_pct = (diff / max_cost * 100) | round(1) %}
-                    <div class="savings-badge">
-                        💡 Hemat {{ savings_pct }}% — Selisih Rp {{ "{:,.0f}".format(diff) }}
-                    </div>
-                    {% endif %}
-
-                    <div class="cost-bars">
-                        <!-- NPK Compound -->
-                        <div class="cost-bar-item">
-                            <div class="cost-bar-header">
-                                <span class="cost-bar-label">🔵 {{ cost.npk_compound.label }}</span>
-                                <span class="cost-bar-amount {% if npk_cost <= single_cost %}cheaper{% else %}expensive{% endif %}">
-                                    Rp {{ "{:,.0f}".format(npk_cost) }}
-                                </span>
-                            </div>
-                            <div class="cost-bar-track">
-                                <div class="cost-bar-fill npk {% if npk_cost <= single_cost %}cheaper-bar{% endif %}"
-                                     data-width="{{ (npk_cost / max_cost * 100) if max_cost > 0 else 0 }}"></div>
-                            </div>
-                        </div>
-
-                        <!-- Single Fertilizer Mix -->
-                        <div class="cost-bar-item">
-                            <div class="cost-bar-header">
-                                <span class="cost-bar-label">🟢 {{ cost.single_fertilizer_mix.label }}</span>
-                                <span class="cost-bar-amount {% if single_cost <= npk_cost %}cheaper{% else %}expensive{% endif %}">
-                                    Rp {{ "{:,.0f}".format(single_cost) }}
-                                </span>
-                            </div>
-                            <div class="cost-bar-track">
-                                <div class="cost-bar-fill single {% if single_cost <= npk_cost %}cheaper-bar{% endif %}"
-                                     data-width="{{ (single_cost / max_cost * 100) if max_cost > 0 else 0 }}"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="cost-recommendation">
-                        <span class="rec-icon">💡</span>{{ cost.recommendation }}
-                    </div>
-                </div>
-            </section>
-            {% endif %}
-            {% endif %}
-
-        </div>
-        {% endif %}
-    </main>
-
-    <!-- ========== FOOTER ========== -->
-    <footer class="footer">
-        <div class="container footer-inner">
-            <div class="footer-text">
-                © 2026 AgroAI — Intelligent Seed &amp; Fertilizer Recommendation System
-            </div>
-            <div class="footer-tech">
-                <span class="footer-tech-badge">FastAPI</span>
-                <span class="footer-tech-badge">Fuzzy Logic</span>
-                <span class="footer-tech-badge">Forward Chaining</span>
-                <span class="footer-tech-badge">Gemini AI</span>
             </div>
         </div>
-    </footer>
 
-    <!-- ========== SCRIPTS ========== -->
+        <!-- Footer -->
+        <div class="footer">
+            <div class="footer-text">© 2024 AgroAI — Intelligent Seed & Fertilizer Recommendation System v2.1</div>
+            <div class="footer-badges">
+                <span class="footer-badge">FastAPI Engine</span>
+                <span class="footer-badge">Fuzzy Logic</span>
+                <span class="footer-badge">Google Gemini 1.5</span>
+            </div>
+        </div>
+
+    </div><!-- /.main-content -->
+
+    <!-- ========== MAPS SCRIPTS ========== -->
     <script>
-    document.addEventListener('DOMContentLoaded', () => {
+    let map = null;
+    let marker = null;
+    let circle = null;
+    let mapInitialized = false;
 
-        // === Form Loading State ===
-        const form = document.getElementById('recommendation-form');
-        const btn = document.getElementById('submit-btn');
+    window.updateCoordinates = function(lat, lng, source) {
+        source = source || 'Manual';
+        const latInput = document.getElementById('latitude');
+        const lonInput = document.getElementById('longitude');
+        const gpsStatus = document.getElementById('gps-status');
+        if (latInput && lonInput) { latInput.value = lat; lonInput.value = lng; }
+        if (typeof initMap === 'function') { initMap(lat, lng); }
+        if (gpsStatus) {
+            gpsStatus.innerHTML = '<span class="dot"></span><span>Lokasi (' + source + '): ' + lat.toFixed(6) + ', ' + lng.toFixed(6) + '</span>';
+        }
+    };
+
+    window.updateOverlayText = function(lat, lng) {
+        var el = document.getElementById('map-location-text');
+        if (el) el.textContent = lat.toFixed(6) + ', ' + lng.toFixed(6);
+    };
+    </script>
+
+    {% if google_maps_api_key %}
+    <script>
+    function initMap(lat, lng) {
+        var mapEl = document.getElementById('gps-map');
+        if (!mapEl || typeof google === 'undefined') return;
+        var pos = { lat: lat, lng: lng };
+        if (!mapInitialized) {
+            map = new google.maps.Map(mapEl, { center: pos, zoom: 14, mapTypeId: 'hybrid', disableDefaultUI: true, zoomControl: true });
+            mapInitialized = true;
+            map.addListener('click', function(e) { updateCoordinates(e.latLng.lat(), e.latLng.lng(), 'Klik Peta'); });
+        } else { map.setCenter(pos); }
+        if (marker) marker.setMap(null);
+        marker = new google.maps.Marker({ position: pos, map: map, icon: { path: google.maps.SymbolPath.CIRCLE, scale: 10, fillColor: '#16a34a', fillOpacity: 0.9, strokeColor: '#fff', strokeWeight: 3 } });
+        updateOverlayText(lat, lng);
+    }
+    function onGoogleMapsReady() {
+        var lat = document.getElementById('latitude'), lon = document.getElementById('longitude');
+        if (lat && lat.value && lon && lon.value) initMap(parseFloat(lat.value), parseFloat(lon.value));
+    }
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=onGoogleMapsReady" async defer></script>
+    {% else %}
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script>
+    function initMap(lat, lng) {
+        var mapEl = document.getElementById('gps-map');
+        if (!mapEl || typeof L === 'undefined') return;
+        var pos = [lat, lng];
+        if (!mapInitialized) {
+            map = L.map(mapEl, { zoomControl: true, attributionControl: true }).setView(pos, 14);
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: 'Esri' }).addTo(map);
+            map.on('click', function(e) { updateCoordinates(e.latlng.lat, e.latlng.lng, 'Klik Peta'); });
+            mapInitialized = true;
+        } else { map.setView(pos, 14); }
+        if (marker) map.removeLayer(marker);
+        if (circle) map.removeLayer(circle);
+        var icon = L.divIcon({ className: 'custom-leaflet-marker', html: '<div style="width:18px;height:18px;background:#16a34a;border:3px solid #fff;border-radius:50%;box-shadow:0 0 8px rgba(0,0,0,0.4);"></div>', iconSize: [18,18], iconAnchor: [9,9] });
+        marker = L.marker(pos, { icon: icon }).addTo(map);
+        circle = L.circle(pos, { color: '#16a34a', fillColor: '#16a34a', fillOpacity: 0.1, radius: 500 }).addTo(map);
+        updateOverlayText(lat, lng);
+    }
+    </script>
+    {% endif %}
+
+    <!-- ========== MAIN SCRIPTS ========== -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Form submit loading state
+        var form = document.getElementById('recommendation-form');
+        var btn = document.getElementById('submit-btn');
         if (form && btn) {
-            form.addEventListener('submit', () => {
-                btn.classList.add('btn-loading');
-                btn.disabled = true;
-            });
+            form.addEventListener('submit', function() { btn.classList.add('btn-loading'); btn.disabled = true; });
         }
 
-        // === Animate Score Rings ===
-        document.querySelectorAll('.score-ring').forEach(ring => {
-            const score = parseFloat(ring.dataset.score) || 0;
-            const circumference = 2 * Math.PI * 26; // r=26
-            const offset = circumference * (1 - score);
-            const fill = ring.querySelector('.ring-fill');
-            if (fill) {
-                setTimeout(() => {
-                    fill.style.strokeDashoffset = offset;
-                }, 300);
+        // GPS detection
+        var latInput = document.getElementById('latitude');
+        var lonInput = document.getElementById('longitude');
+        var gpsStatus = document.getElementById('gps-status');
+        var refreshBtn = document.getElementById('refresh-gps-btn');
+
+        function detectGPS() {
+            if (!latInput || !lonInput || !gpsStatus) return;
+            gpsStatus.innerHTML = '<span class="dot" style="background:#f59e0b"></span><span>Menghubungi satelit GPS...</span>';
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(pos) { updateCoordinates(pos.coords.latitude, pos.coords.longitude, 'GPS Aktif'); },
+                    function(err) {
+                        updateCoordinates(-7.571211, 110.824715, 'Fallback');
+                        if (gpsStatus) gpsStatus.innerHTML = '<span class="dot" style="background:#ef4444"></span><span>GPS Ditolak — Fallback aktif</span>';
+                    },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                );
+            } else {
+                gpsStatus.innerHTML = '<span class="dot" style="background:#ef4444"></span><span>Browser tidak mendukung GPS</span>';
             }
-        });
-
-        // === Animate Nutrient Bars ===
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const bars = entry.target.querySelectorAll('.nutrient-bar-fill, .cost-bar-fill');
-                    bars.forEach(bar => {
-                        const width = bar.dataset.width;
-                        if (width) {
-                            setTimeout(() => {
-                                bar.style.width = Math.min(parseFloat(width), 100) + '%';
-                            }, 200);
-                        }
-                    });
-                    observer.unobserve(entry.target);
-                }
-            });
-        }, { threshold: 0.2 });
-
-        document.querySelectorAll('.nutrient-bars, .cost-bars').forEach(el => {
-            observer.observe(el);
-        });
-
-        // === Smooth scroll to results ===
-        {% if result %}
-        const aiModeBanner = document.querySelector('.ai-mode-banner');
-        if (aiModeBanner) {
-            setTimeout(() => {
-                aiModeBanner.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 400);
         }
-        {% endif %}
 
+        // Auto detect GPS if inputs empty
+        if (latInput && !latInput.value.trim()) detectGPS();
+        else if (latInput && latInput.value && lonInput && lonInput.value) {
+            setTimeout(function() { initMap(parseFloat(latInput.value), parseFloat(lonInput.value)); }, 300);
+        }
+
+        // Manual input change updates map
+        if (latInput && lonInput) {
+            function handleManual() {
+                var lat = parseFloat(latInput.value), lon = parseFloat(lonInput.value);
+                if (!isNaN(lat) && !isNaN(lon)) initMap(lat, lon);
+            }
+            latInput.addEventListener('input', handleManual);
+            lonInput.addEventListener('input', handleManual);
+        }
+
+        if (refreshBtn) refreshBtn.addEventListener('click', function(e) { e.preventDefault(); detectGPS(); });
+
+        // Animate score rings
+        document.querySelectorAll('.rec-ring').forEach(function(ring) {
+            var score = parseFloat(ring.dataset.score) || 0;
+            var circ = 2 * Math.PI * 24;
+            var offset = circ * (1 - score);
+            var fill = ring.querySelector('.ring-fill');
+            if (fill) setTimeout(function() { fill.style.strokeDashoffset = offset; }, 300);
+        });
+
+        // Sidebar toggle
+        var toggle = document.getElementById('sidebar-toggle');
+        var sidebar = document.getElementById('sidebar');
+        var overlay = document.getElementById('sidebar-overlay');
+        if (toggle && sidebar && overlay) {
+            toggle.addEventListener('click', function() { sidebar.classList.toggle('open'); overlay.classList.toggle('active'); });
+            overlay.addEventListener('click', function() { sidebar.classList.remove('open'); overlay.classList.remove('active'); });
+        }
+
+        // Toggle detail expansion
+        window.toggleDetail = function(btn) {
+            var wrapper = btn.closest('.rec-card-wrapper');
+            var detail = wrapper.querySelector('.rec-detail');
+            if (detail.style.display === 'none') {
+                detail.style.display = 'block';
+                btn.textContent = 'TUTUP RINCIAN ✕';
+            } else {
+                detail.style.display = 'none';
+                var isTop = btn.classList.contains('green');
+                btn.textContent = isTop ? 'LIHAT RINCIAN PROFIT \u2192' : 'RINCIAN \u2192';
+            }
+        };
+
+        // Smooth scroll to results
+        {% if result %}
+        var banner = document.querySelector('.panel-header');
+        if (banner) setTimeout(function() { banner.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 400);
+        {% endif %}
     });
     </script>
 

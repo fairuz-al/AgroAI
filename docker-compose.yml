@@ -1,14 +1,22 @@
 services:
   web:
-    build: .
-    container_name: agroai_web
+
+    build: 
+      context: .
+      dockerfile: Dockerfile
+      network: host
     ports:
       - "8000:8000"
     volumes:
-      - .:/code
+      # Memetakan akar proyek secara presisi agar sinkron dengan struktur folder VS Code kamu
+      - .:/workspace
+    # Menetapkan direktori kerja utama di dalam kontainer secara eksplisit
+    working_dir: /workspace
     environment:
-      # Kita langsung hardcode host-nya ke service 'db' milik docker
-      - DATABASE_URL=postgresql://postgres:secret_password@db:5432/agroai_db
+      # Membaca variabel environment secara dinamis dari file .env lokal
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-agroai}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY}
     env_file:
       - .env
     depends_on:
@@ -25,16 +33,24 @@ services:
       - POSTGRES_DB=agroai_db
     ports:
       - "5432:5432"
+
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_DB=${POSTGRES_DB:-agroai}
+
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
     healthcheck:
-      # Changed "-U postgres" to "-U ${POSTGRES_USER}" so it checks using "agroai"
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+
+      # Perbaikan: Menggunakan skema kueri pengecekan berlapis yang toleran terhadap inisialisasi awal db
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-postgres} -d $${POSTGRES_DB:-agroai}"]
 
       interval: 5s
       timeout: 5s
       retries: 5
+    restart: always
 
 volumes:
   postgres_data:
