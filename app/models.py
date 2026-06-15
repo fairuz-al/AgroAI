@@ -82,6 +82,16 @@ class FertilizationPlan(BaseModel):
     cost_comparison: CostComparison
 
 
+class ReasoningStep(BaseModel):
+    step: int
+    icon: str
+    title: str
+    description: str
+
+
 class RecommendationResponse(BaseModel):
     recommended_crops: List[CropRecommendation]
     fertilization_plan: FertilizationPlan
+    ai_mode: str = "local"
+    reasoning_chain: List[ReasoningStep] = []
+    analysis_summary: str = ""
