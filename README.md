@@ -1,138 +1,140 @@
-# 🌾 AgroAI: Intelligent Seed & Fertilizer Recommendation System
+# 🌾 AgroAI: Sistem Rekomendasi Cerdas Komoditas Pertanian Berbasis Sistem Pakar & AI
 
-> **AgroAI** adalah platform asisten cerdas berbasis *Reasoning AI* yang dirancang untuk membantu petani mengoptimalkan hasil panen sekaligus menekan biaya produksi.
+> **AgroAI** adalah platform asisten cerdas agronomis yang dirancang untuk membantu petani mengoptimalkan produktivitas lahan sekaligus menekan biaya produksi secara strategis. 
 
-Sistem ini bekerja dengan menganalisis karakteristik geografis lahan untuk merekomendasikan komoditas terbaik, lalu menyusun strategi pemupukan yang presisi dan ekonomis berdasarkan fase pertumbuhan tanaman serta fluktuasi harga pasar secara *real-time*.
-
-Berbeda dengan AI konvensional yang sering mengalami halusinasi data, AgroAI menggunakan pendekatan **Neuro-Symbolic** — menggabungkan kecerdasan LLM dengan validasi aturan database lokal — menggunakan arsitektur **ReAct (Reason + Act)**.
+Sistem ini bekerja dengan menganalisis karakteristik geografis lahan secara *real-time*, merekomendasikan jenis komoditas yang paling sesuai dan menguntungkan, serta merancang rencana pemupukan dinamis (N, P, K) berdasarkan fase pertumbuhan tanaman dan fluktuasi harga pasar.
 
 ---
 
 ## 🚀 Fitur Utama
 
 ### 1. Smart Land & Crop Matching (Pemilihan Komoditas)
+- **Fuzzy Suitability Scoring** — Mengukur tingkat kecocokan komoditas menggunakan logika fuzzy Mamdani berdasarkan parameter jenis tanah (Aluvial, Andosol, Liat, Pasir, dll.), elevasi lahan (meter di atas permukaan laut / mdpl), serta daya tarik harga pasar.
+- **GPS Auto-Resolver** — Secara otomatis mendeteksi ketinggian (elevasi), nama wilayah geografis, dan memprediksi jenis tanah default berdasarkan koordinat GPS latitude & longitude.
+- **Sinkronisasi Harga Pasar Terkini** — Mengambil tren harga jual komoditas regional (terintegrasi dengan BAPPEBTI) untuk memberikan proyeksi profitabilitas riil.
 
-- **Analisis Multi-Variabel** — Mengombinasikan Jenis Tanah (misal: Aluvial, Pasir, Andosol) dan Tingkat Dataran (Rendah/Tinggi via mdpl) untuk menentukan kecocokan hayati tanaman.
-- **Proyeksi Nilai Ekonomis** — AI tidak hanya menyarankan tanaman yang subur, tetapi juga menganalisis tren harga jual pasar terkini di wilayah tersebut untuk memaksimalkan profitabilitas petani.
+### 2. Dynamic Fertilization Plan (Rencana Pemupukan Dinamis)
+- **Kebutuhan Nutrisi Spesifik Tanaman** — Menyediakan formulasi hara N, P, K yang dinamis untuk fase vegetatif (pertumbuhan) dan generatif (pembuahan) yang disesuaikan secara ilmiah untuk 9 komoditas utama (Padi, Jagung, Kentang, Bawang Merah, Semangka, Cabai Rawit, Tomat, Singkong, dan Kedelai).
+- **Kalkulator Efisiensi Pupuk** — Membandingkan pengeluaran riil antara penggunaan **Pupuk Majemuk (NPK Phonska)** dengan **Campuran Pupuk Tunggal (Urea + SP-36 + KCl)** berdasarkan luas lahan (hektar) untuk menemukan biaya operasional terendah.
 
-### 2. Dynamic Fertilization & Cost Optimization (Nutrisi & Harga Relatif)
+### 3. Tampilan Antarmuka Modern & Bersih (Premium UI)
+- **Emerald Theme** — Palet warna hijau zamrud modern yang serasi, bersih, dan memanjakan mata, dirancang khusus untuk nuansa agroteknologi.
+- **Minimalist Panel Headers** — Menghilangkan tajuk panel solid kontras lama, digantikan dengan garis batas tipis yang elegan dan aksen warna tematik untuk nuansa SaaS premium.
+- **Animated Suitability Ring** — Indikator persentase kecocokan lingkaran interaktif berbasis animasi SVG path stroke-dashoffset.
+- **Sleek Micro-interactions** — Dilengkapi efek hover translasi yang halus, perluasan rincian profitabilitas yang responsif, serta animasi pemuatan yang mulus.
+- **Bebas dari Simbol AI Berlebihan** — Menghilangkan emoji dekoratif yang ramai serta jargon AI bombastis agar sistem terlihat bersih dan berkelas industri.
 
-- **Sinkronisasi Fase Tumbuh** — Rekomendasi takaran unsur hara (N, P, K) yang dinamis, beradaptasi otomatis mengikuti fase tanaman (Vegetatif, Generatif, hingga Pematangan).
-- **Kalkulator Harga Relatif** — AI secara cerdas membandingkan harga pasar berbagai opsi pupuk (misal: membandingkan efisiensi biaya antara membeli pupuk majemuk NPK langsung vs meracik sendiri dari pupuk tunggal seperti Urea + SP36 + KCl).
+### 4. Halaman Riwayat Pengembangan (History Ongoing)
+- Terintegrasi menu `/history` khusus yang merinci status pengembangan riwayat analisis secara transparan (*ongoing* karena menunggu migrasi skema tabel database `analysis_history`), dilengkapi visual kartu log pratinjau semi-transparan yang estetik.
 
 ---
 
-## 🛠️ Arsitektur Sistem & Alur Penalaran (Reasoning)
+## 🛠️ Arsitektur Sistem & Alur Penalaran (Reasoning Flow)
 
-Sistem ini dibangun menggunakan arsitektur **Agentic AI** yang memisahkan logika bahasa (LLM) dengan validasi data riil (Database/API):
+AgroAI mengadopsi pendekatan **Neuro-Symbolic** (Hybrid AI) yang memisahkan logika interpretasi bahasa dengan kalkulasi aturan agronomis kaku:
 
 ```
-User Input
-    │
-    ▼
-AI Reasoning (ReAct Framework)
-    │  Menganalisis maksud pengguna & memutuskan tool yang dipanggil
-    ▼
-Database Retrieval
-    │  Backend mengeksekusi query SQL/ORM ke database lokal
-    │  → Data kecocokan tanaman
-    │  → Tabel harga pupuk terbaru
-    ▼
-Contextual Output
-    │  AI melakukan penalaran biaya & membungkus hasil menjadi
-    └→ Rekomendasi strategis yang mudah dipahami petani
+          [ Masukan Lahan Petani ]
+         (GPS Koordinat & Luas Lahan)
+                     │
+                     ▼
+         [ Resolusi GPS Otomatis ]
+   (Elevasi MDPL, Wilayah, & Jenis Tanah)
+                     │
+                     ▼
+      ┌──────────────┴──────────────┐
+      ▼                             ▼
+[ AI Mode API ]             [ Expert System Fallback ]
+(Gemini / Groq)             (Fuzzy Logic + Forward Chaining)
+      │                             │
+      └──────────────┬──────────────┘
+                     ▼
+        [ Penyelarasan Nutrisi ]
+    (CROP_NUTRIENT_REQUIREMENTS Mapping)
+                     │
+                     ▼
+      [ Kalkulator Efisiensi Biaya ]
+   (Campuran Tunggal vs Majemuk NPK)
+                     │
+                     ▼
+      [ Hasil Rekomendasi & Profit ]
 ```
 
-| Tahap | Komponen | Keterangan |
-|-------|----------|------------|
-| **1. User Input** | Frontend / API | Petani memasukkan kondisi lahan (contoh: Tanah Liat, Dataran Rendah) |
-| **2. AI Reasoning** | ReAct Framework | AI memutuskan untuk memanggil fungsi internal (Tools), bukan menebak |
-| **3. DB Retrieval** | SQLAlchemy + PostgreSQL | Query data kecocokan tanaman & harga pupuk terkini |
-| **4. Output** | LLM Response | Rekomendasi strategis yang kontekstual dan akurat |
+### Jalur Keputusan (Inference Engines)
+1. **Model Bahasa Besar (Gemini & Groq)**: Memproses data agronomis menggunakan model `Google Gemini 2.5 Flash` (atau Groq `Llama 3.3 70B`) untuk interpretasi kontekstual terstruktur.
+2. **Sistem Pakar Lokal (Fuzzy + Forward Chaining)**: Apabila kunci API tidak terkonfigurasi atau terjadi gangguan jaringan (timeout), sistem secara otomatis mengaktifkan mesin logika lokal untuk menghitung klasifikasi tanah, zona elevasi, kelayakan komoditas, dan pembiayaan pupuk.
 
 ---
 
 ## 💻 Tech Stack
 
-| Layer | Teknologi | Alasan Pemilihan |
-|-------|-----------|-----------------|
-| **Backend Framework** | FastAPI (Python) | Performa asinkronus (`async`/`await`), validasi otomatis via Pydantic, Swagger UI built-in |
-| **AI Orchestration** | LangChain / Pydantic AI | Framework agen penalaran yang modular dan extensible |
-| **Database** | PostgreSQL | Pengelolaan data spasial pertanian dan harga komoditas |
-| **ORM** | SQLAlchemy | Abstraksi database yang robust dan mendukung query kompleks |
-
----
+- **Backend**: FastAPI (Python 3.11) — asinkronus (`async`/`await`), performa tinggi, dan validasi data Pydantic.
+- **Database**: PostgreSQL (SQLAlchemy ORM) — mendukung penyimpanan relasional relasi komoditas (`crops`), pupuk (`fertilizers`), dan log riwayat.
+- **Frontend**: Vanilla HTML5, CSS3 Variables, dan Leaflet.js/Google Maps API untuk pemetaan interaktif.
+- **Containerization**: Docker & Docker Compose untuk orkestrasi web server dan database database terisolasi.
 
 ---
 
 ## ⚙️ Instalasi & Menjalankan Proyek
 
-### Prasyarat
+### Menggunakan Docker Compose (Direkomendasikan)
+Pastikan Anda telah memasang **Docker** dan **Docker Compose** di sistem Anda.
 
-- Python 3.10+
-- PostgreSQL
+1. **Salin Environment Variables**:
+   ```bash
+   cp .env.example .env
+   ```
+   *Edit file `.env` dan masukkan API Key Anda (misal `GEMINI_API_KEY` atau `GROQ_API_KEY`) jika ingin menggunakan mode AI cloud.*
 
-### Langkah Instalasi
+2. **Jalankan Container**:
+   ```bash
+   docker compose up -d
+   ```
 
-```bash
-# 1. Clone repository
-git clone https://github.com/username/agroai.git
-cd agroai
+3. **Inisialisasi Database (Seeding)**:
+   Saat pertama kali dijalankan, sistem secara otomatis akan membuat tabel database dan mengisi data komoditas default serta harga pupuk standar di dalam lifecyle startup aplikasi.
 
-# 2. Buat virtual environment
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+4. **Akses Aplikasi**:
+   Buka browser dan akses `http://localhost:8000`.
 
-# 3. Install dependencies
-pip install -r requirements.txt
-
-# 4. Salin dan konfigurasi environment variable
-cp .env.example .env
-# Edit .env sesuai konfigurasi database dan API key
-
-# 5. Jalankan migrasi database
-alembic upgrade head
-
-# 6. Jalankan server
-uvicorn app.main:app --reload
-```
-
-Server akan berjalan di `http://localhost:8000`. Dokumentasi API tersedia di `http://localhost:8000/docs`.
+### Perintah Docker Bermanfaat
+- **Melihat Status Kontainer**:
+  ```bash
+  docker compose ps
+  ```
+- **Melihat Log Server**:
+  ```bash
+  docker compose logs -f web
+  ```
+- **Memuat Ulang Kode setelah Edit**:
+  Jika Anda mengedit kode backend di lokal, restart kontainer web agar uvicorn memuat kode terbaru:
+  ```bash
+  docker compose restart web
+  ```
+- **Menghentikan Kontainer**:
+  ```bash
+  docker compose down
+  ```
 
 ---
 
-## 📖 Contoh Penggunaan
+## 📖 Struktur Database Seed Default
 
-**Request:**
-```json
-POST /api/v1/recommend
-{
-  "soil_type": "Aluvial",
-  "elevation_mdpl": 150,
-  "land_area_ha": 2.5,
-  "location": "Jawa Tengah"
-}
-```
+### Komoditas Terdaftar (`crops`)
+- **Padi IR64** (Tanah Aluvial, 0-600 mdpl)
+- **Jagung Hibrida Bisi 2** (Tanah Andosol, 0-1000 mdpl)
+- **Kentang Granola** (Tanah Andosol, 1000-3000 mdpl)
+- **Bawang Merah Bima** (Tanah Liat, 0-250 mdpl)
+- **Semangka Tanpa Biji** (Tanah Pasir, 0-300 mdpl)
+- **Cabai Rawit** (Tanah Aluvial, 0-1500 mdpl)
+- **Tomat** (Tanah Andosol, 500-1500 mdpl)
+- **Singkong Mukibat** (Tanah Liat, 0-800 mdpl)
+- **Kedelai Wilis** (Tanah Aluvial, 0-500 mdpl)
 
-**Response:**
-```json
-{
-  "recommended_crops": [
-    {
-      "name": "Padi IR64",
-      "suitability_score": 0.92,
-      "estimated_price_per_kg": 5200,
-      "reasoning": "Tanah aluvial dengan ketinggian rendah sangat ideal untuk padi sawah..."
-    }
-  ],
-  "fertilization_plan": {
-    "vegetative_phase": { "N": "90 kg/ha", "P": "45 kg/ha", "K": "30 kg/ha" },
-    "generative_phase": { "N": "45 kg/ha", "P": "20 kg/ha", "K": "60 kg/ha" },
-    "cost_comparison": {
-      "npk_compound": { "total_cost": 1250000, "label": "NPK Majemuk" },
-      "single_fertilizer_mix": { "total_cost": 980000, "label": "Urea + SP36 + KCl" },
-      "recommendation": "Meracik pupuk tunggal lebih hemat 21.6% untuk luas lahan ini"
-    }
-  }
-}
-```
+### Referensi Pupuk Terdaftar (`fertilizers`)
+- **Urea** (Pupuk Tunggal - N: 46%)
+- **SP-36** (Pupuk Tunggal - P: 36%)
+- **KCl** (Pupuk Tunggal - K: 60%)
+- **NPK Phonska 15-15-15** (Pupuk Majemuk - N: 15%, P: 15%, K: 15%)
+- **ZA** (Pupuk Tunggal - N: 21%)
+- **Organik** (Pupuk Organik)

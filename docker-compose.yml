@@ -1,5 +1,6 @@
 services:
   web:
+
     build: 
       context: .
       dockerfile: Dockerfile
@@ -20,21 +21,32 @@ services:
       - .env
     depends_on:
       db:
-        condition: service_healthy
+        condition: service_healthy # Menunggu DB benar-benar siap total sebelum web jalan
 
   db:
     image: postgres:15-alpine
+    container_name: agroai_postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=secret_password
+      - POSTGRES_DB=agroai_db
     ports:
       - "5432:5432"
+
     environment:
       - POSTGRES_USER=${POSTGRES_USER:-postgres}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
       - POSTGRES_DB=${POSTGRES_DB:-agroai}
+
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
     healthcheck:
+
       # Perbaikan: Menggunakan skema kueri pengecekan berlapis yang toleran terhadap inisialisasi awal db
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-postgres} -d $${POSTGRES_DB:-agroai}"]
+
       interval: 5s
       timeout: 5s
       retries: 5
