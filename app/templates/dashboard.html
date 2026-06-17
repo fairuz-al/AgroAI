@@ -36,7 +36,7 @@
         </nav>
         <div class="sidebar-footer">
             <span class="status-dot"></span>
-            <span class="status-text">AI ENGINE ACTIVE</span>
+            <span class="status-text">SISTEM AKTIF</span>
         </div>
     </aside>
 
@@ -69,7 +69,7 @@
             <div class="left-column">
                 <div class="panel">
                     <div class="panel-header green">
-                        📍 DATA INPUT LAHAN
+                        DATA INPUT LAHAN
                         <span class="badge">AUTO-GPS</span>
                     </div>
                     <div class="panel-body">
@@ -106,7 +106,7 @@
 
                             <!-- GPS Sync Button -->
                             <button type="button" id="refresh-gps-btn" class="btn-gps-sync">
-                                🔄 Sinkronkan GPS Ulang
+                                Sinkronkan GPS Ulang
                             </button>
 
                             <!-- Land Area -->
@@ -123,7 +123,7 @@
 
                             <!-- Submit Button -->
                             <button type="submit" class="btn-primary" id="submit-btn">
-                                <span class="btn-text">🧠 JALANKAN ANALISIS AI</span>
+                                <span class="btn-text">JALANKAN ANALISIS LAHAN</span>
                                 <div class="spinner"></div>
                             </button>
                         </form>
@@ -133,7 +133,7 @@
                 <!-- Metadata Panel (shown after analysis) -->
                 {% if input_values %}
                 <div class="panel" style="margin-top: 1rem;">
-                    <div class="panel-header dark">📋 METADATA LAHAN</div>
+                    <div class="panel-header dark">METADATA LAHAN</div>
                     <div class="panel-body">
                         <div class="metadata-grid">
                             <div class="meta-card">
@@ -142,7 +142,7 @@
                                 <div class="meta-value">{{ input_values.elevation_mdpl }} mdpl</div>
                             </div>
                             <div class="meta-card">
-                                <div class="meta-icon">🌍</div>
+                                <div class="meta-icon">🌱</div>
                                 <div class="meta-label">Jenis Tanah</div>
                                 <div class="meta-value">{{ input_values.soil_type }}</div>
                             </div>
@@ -152,7 +152,7 @@
                                 <div class="meta-value">{{ input_values.location }}</div>
                             </div>
                             <div class="meta-card">
-                                <div class="meta-icon">🧪</div>
+                                <div class="meta-icon">✓</div>
                                 <div class="meta-label">Status</div>
                                 <div class="meta-value">Teranalisis</div>
                             </div>
@@ -168,12 +168,12 @@
                 {% if not result and not error_message %}
                 <!-- Empty State: AI Info Box -->
                 <div class="panel">
-                    <div class="panel-header blue">ℹ️ RINGKASAN ANALISIS AI</div>
+                    <div class="panel-header blue">RINGKASAN ANALISIS</div>
                     <div class="panel-body">
                         <div class="ai-info-box">
-                            <div class="info-title">Sistem AI AgroAI</div>
+                            <div class="info-title">Sistem Rekomendasi AgroAI</div>
                             <div class="info-text">
-                                Masukkan koordinat GPS dan luas lahan Anda, lalu klik <strong>"Jalankan Analisis AI"</strong>
+                                Masukkan koordinat GPS dan luas lahan Anda, lalu klik <strong>"Jalankan Analisis Lahan"</strong>
                                 untuk mendapatkan rekomendasi komoditas terbaik beserta rencana pemupukan optimal
                                 menggunakan <strong>Fuzzy Logic</strong> dan <strong>Forward Chaining</strong>.
                             </div>
@@ -193,8 +193,8 @@
                                 <div class="step-dot red">2</div>
                                 <div class="step-content">
                                     <div class="step-label">Langkah 2</div>
-                                    <h4 class="text-red">Neural AI Inference</h4>
-                                    <p>Pemrosesan spesifik variabel cuaca & tanah melalui Fuzzy Logic engine.</p>
+                                    <h4 class="text-red">Evaluasi Karakteristik Lahan</h4>
+                                    <p>Pemrosesan spesifik variabel cuaca dan tanah menggunakan Fuzzy Logic.</p>
                                 </div>
                             </div>
                             <div class="ai-step">
@@ -211,15 +211,15 @@
                 {% endif %}
 
                 {% if result %}
-                <!-- AI Mode Banner -->
+                <!-- Mode Banner -->
                 <div class="panel" style="margin-bottom: 0;">
                     <div class="panel-header {{ 'blue' if ai_mode == 'gemini' else 'orange' if ai_mode == 'groq' else 'green' }}">
                         {% if ai_mode == 'gemini' %}
-                            ✨ Diproses oleh Google Gemini AI
+                            Rekomendasi Berbasis Model Regional (Google Gemini)
                         {% elif ai_mode == 'groq' %}
-                            🦙 Diproses oleh Groq AI (Llama 3.3 70B)
+                            Rekomendasi Berbasis Model Regional (Llama)
                         {% else %}
-                            ⚡ Diproses oleh Fuzzy Logic + Forward Chaining Engine
+                            Rekomendasi Berbasis Sistem Pakar (Fuzzy + Forward)
                         {% endif %}
                     </div>
                 </div>
@@ -227,7 +227,7 @@
                 <!-- Analysis Summary -->
                 {% if analysis_summary %}
                 <div class="panel">
-                    <div class="panel-header blue">ℹ️ RINGKASAN ANALISIS AI</div>
+                    <div class="panel-header blue">RINGKASAN ANALISIS</div>
                     <div class="panel-body">
                         <div class="ai-info-box" style="margin-bottom: 0;">
                             <div class="info-text">{{ analysis_summary }}</div>
@@ -239,7 +239,7 @@
                 <!-- AI Reasoning Steps -->
                 {% if reasoning_chain %}
                 <div class="panel">
-                    <div class="panel-header dark">🧠 PENALARAN AI (FUZZY LOGIC)</div>
+                    <div class="panel-header dark">ALUR KEPUTUSAN (FUZZY LOGIC)</div>
                     <div class="panel-body">
                         <div class="ai-steps">
                             {% for step in reasoning_chain %}
@@ -336,12 +336,12 @@
                 <!-- Fertilization Plan -->
                 {% if fertilization_plan %}
                 <div class="panel">
-                    <div class="panel-header green">🧪 RENCANA PEMUPUKAN</div>
+                    <div class="panel-header green">RENCANA PEMUPUKAN</div>
                     <div class="panel-body">
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                             <!-- Vegetative -->
                             <div>
-                                <h4 style="font-size: .85rem; margin-bottom: .75rem; color: var(--primary);">🌿 Fase Vegetatif</h4>
+                                <h4 style="font-size: .85rem; margin-bottom: .75rem; color: var(--primary);">Fase Vegetatif</h4>
                                 <div style="display: flex; flex-direction: column; gap: .4rem;">
                                     {% set veg = fertilization_plan.vegetative_phase %}
                                     <div style="display: flex; justify-content: space-between; font-size: .8rem;">
@@ -360,7 +360,7 @@
                             </div>
                             <!-- Generative -->
                             <div>
-                                <h4 style="font-size: .85rem; margin-bottom: .75rem; color: var(--accent-orange);">🌸 Fase Generatif</h4>
+                                <h4 style="font-size: .85rem; margin-bottom: .75rem; color: var(--accent-orange);">Fase Generatif</h4>
                                 <div style="display: flex; flex-direction: column; gap: .4rem;">
                                     {% set gen = fertilization_plan.generative_phase %}
                                     <div style="display: flex; justify-content: space-between; font-size: .8rem;">
@@ -384,17 +384,17 @@
 
                 {% endif %}
 
-                <!-- AI Engine Status -->
+                <!-- System Status -->
                 <div class="engine-status">
                     <span class="dot"></span>
-                    <span class="label">AI ENGINE ACTIVE</span>
+                    <span class="label">SISTEM ANALISIS AKTIF</span>
                     <span class="desc">
                         {% if result and ai_mode == 'gemini' %}
-                        Google Gemini AI telah selesai memproses data agronomis Anda.
+                        Sistem telah selesai memproses data agronomis menggunakan basis data regional.
                         {% elif result and ai_mode == 'groq' %}
-                        Groq Llama 3.3 70B telah selesai memproses data agronomis Anda.
+                        Sistem telah selesai memproses data agronomis menggunakan basis data regional.
                         {% elif result %}
-                        Fuzzy Logic Engine telah selesai memproses data agronomis Anda.
+                        Sistem pakar telah selesai memproses data agronomis Anda.
                         {% else %}
                         Sistem siap memproses data agronomis Anda.
                         {% endif %}
@@ -409,7 +409,6 @@
             <div class="footer-badges">
                 <span class="footer-badge">FastAPI Engine</span>
                 <span class="footer-badge">Fuzzy Logic</span>
-                <span class="footer-badge">Google Gemini 1.5</span>
             </div>
         </div>
 

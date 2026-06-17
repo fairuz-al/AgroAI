@@ -176,6 +176,16 @@ async def read_root(request: Request):
         }
     )
 
+@ui_router.get("/history", response_class=HTMLResponse)
+async def read_history(request: Request):
+    return templates.TemplateResponse(
+        request,
+        "history.html",
+        {
+            "google_maps_api_key": os.getenv("GOOGLE_MAPS_API_KEY", "")
+        }
+    )
+
 @ui_router.post("/", response_class=HTMLResponse)
 async def handle_form_recommendation(
     request: Request,

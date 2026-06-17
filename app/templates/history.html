@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AgroAI — Riwayat Analisis Lahan">
+    <title>AgroAI — Riwayat Analisis</title>
+    <link rel="stylesheet" href="/static/css/style.css?v=3">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>">
+</head>
+<body>
+
+    <!-- ========== SIDEBAR ========== -->
+    <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">☰</button>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-icon">✓</div>
+            <div class="brand-text">
+                <span class="brand-name">AgroAI</span>
+                <span class="brand-tag">FUZZY + FORWARD</span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="/" class="sidebar-nav-item">
+                <span class="nav-icon">📊</span>
+                Dashboard Analisis
+            </a>
+            <a href="/history" class="sidebar-nav-item active">
+                <span class="nav-icon">🕐</span>
+                History
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <span class="status-dot"></span>
+            <span class="status-text">SISTEM AKTIF</span>
+        </div>
+    </aside>
+
+    <!-- ========== MAIN CONTENT ========== -->
+    <div class="main-content">
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="page-header-left">
+                <h1>Riwayat Analisis</h1>
+                <p>Melihat kembali riwayat perhitungan agronomis yang telah dilakukan.</p>
+            </div>
+            <div class="status-badge">
+                Status Fitur: <span class="ongoing-text" style="color: var(--accent-orange); font-weight: 700;">Ongoing</span>
+            </div>
+        </div>
+
+        <!-- History Main Card -->
+        <div class="panel">
+            <div class="panel-header" style="background: linear-gradient(135deg, #f59e0b, #d97706); border-bottom: 1px solid var(--border);">
+                Fase Migrasi Database
+            </div>
+            <div class="panel-body" style="text-align: center; padding: 3rem 2rem;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">🗄️</div>
+                <h2 style="font-size: 1.5rem; color: var(--text-primary); margin-bottom: 0.75rem;">Integrasi Database Sedang Berjalan</h2>
+                <p style="color: var(--text-secondary); max-width: 500px; margin: 0 auto 1.5rem; font-size: 0.95rem; line-height: 1.6;">
+                    Fitur penyimpanan riwayat analisis lahan saat ini dalam status <strong>Ongoing</strong>. Kami sedang mempersiapkan migrasi database untuk mendukung penyimpanan data secara persisten dan aman.
+                </p>
+                <div style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: var(--radius-md); font-size: 0.82rem; color: #d97706; font-weight: 600;">
+                    Status: Menunggu Migrasi Tabel `analysis_history`
+                </div>
+            </div>
+        </div>
+
+        <!-- Visual locked state placeholder cards to show modern design -->
+        <div style="margin-top: 2rem;">
+            <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 1rem;">Pratinjau Tampilan Mendatang</h3>
+            
+            <div style="display: grid; grid-template-columns: 1fr; gap: 1rem; opacity: 0.4; pointer-events: none; user-select: none;">
+                <!-- Card Placeholder 1 -->
+                <div class="panel" style="border-style: dashed;">
+                    <div class="panel-body" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem;">
+                        <div>
+                            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-tertiary);">2026-06-17 14:00</div>
+                            <h4 style="font-size: 0.95rem; color: var(--text-primary); margin: 0.2rem 0;">Tanah Aluvial, 150 mdpl (Semarang)</h4>
+                            <p style="font-size: 0.8rem; color: var(--text-secondary);">Rekomendasi Utama: Padi IR64 (Kecocokan 95%)</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 0.85rem; font-weight: 700; color: var(--primary);">Rp 25.400.000 / ha</div>
+                            <span style="font-size: 0.7rem; color: var(--text-tertiary);">Estimasi Profit</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card Placeholder 2 -->
+                <div class="panel" style="border-style: dashed;">
+                    <div class="panel-body" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem;">
+                        <div>
+                            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-tertiary);">2026-06-16 10:30</div>
+                            <h4 style="font-size: 0.95rem; color: var(--text-primary); margin: 0.2rem 0;">Tanah Andosol, 1200 mdpl (Temanggung)</h4>
+                            <p style="font-size: 0.8rem; color: var(--text-secondary);">Rekomendasi Utama: Kentang Granola (Kecocokan 90%)</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 0.85rem; font-weight: 700; color: var(--primary);">Rp 45.100.000 / ha</div>
+                            <span style="font-size: 0.7rem; color: var(--text-tertiary);">Estimasi Profit</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="footer-text">© 2024 AgroAI — Intelligent Seed & Fertilizer Recommendation System v2.1</div>
+            <div class="footer-badges">
+                <span class="footer-badge">FastAPI Engine</span>
+                <span class="footer-badge">Fuzzy Logic</span>
+            </div>
+        </div>
+
+    </div><!-- /.main-content -->
+
+    <!-- ========== MAIN SCRIPTS ========== -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Sidebar toggle
+        var toggle = document.getElementById('sidebar-toggle');
+        var sidebar = document.getElementById('sidebar');
+        var overlay = document.getElementById('sidebar-overlay');
+        if (toggle && sidebar && overlay) {
+            toggle.addEventListener('click', function() { sidebar.classList.toggle('open'); overlay.classList.toggle('active'); });
+            overlay.addEventListener('click', function() { sidebar.classList.remove('open'); overlay.classList.remove('active'); });
+        }
+    });
+    </script>
+
+</body>
+</html>
