@@ -16,6 +16,72 @@ from app.services.gps_resolver import (
 
 logger = logging.getLogger("uvicorn.error")
 
+CROP_NUTRIENT_REQUIREMENTS = {
+    "padi": {
+        "veg": {"N": "120 kg/ha", "P": "60 kg/ha", "K": "50 kg/ha"},
+        "gen": {"N": "60 kg/ha", "P": "30 kg/ha", "K": "80 kg/ha"},
+        "veg_raw": {"N": 120.0, "P": 60.0, "K": 50.0},
+        "gen_raw": {"N": 60.0, "P": 30.0, "K": 80.0},
+        "npk_dose": 500.0
+    },
+    "jagung": {
+        "veg": {"N": "150 kg/ha", "P": "75 kg/ha", "K": "50 kg/ha"},
+        "gen": {"N": "75 kg/ha", "P": "30 kg/ha", "K": "100 kg/ha"},
+        "veg_raw": {"N": 150.0, "P": 75.0, "K": 50.0},
+        "gen_raw": {"N": 75.0, "P": 30.0, "K": 100.0},
+        "npk_dose": 600.0
+    },
+    "kentang": {
+        "veg": {"N": "100 kg/ha", "P": "120 kg/ha", "K": "80 kg/ha"},
+        "gen": {"N": "50 kg/ha", "P": "60 kg/ha", "K": "180 kg/ha"},
+        "veg_raw": {"N": 100.0, "P": 120.0, "K": 80.0},
+        "gen_raw": {"N": 50.0, "P": 60.0, "K": 180.0},
+        "npk_dose": 700.0
+    },
+    "bawang": {
+        "veg": {"N": "90 kg/ha", "P": "60 kg/ha", "K": "60 kg/ha"},
+        "gen": {"N": "45 kg/ha", "P": "30 kg/ha", "K": "120 kg/ha"},
+        "veg_raw": {"N": 90.0, "P": 60.0, "K": 60.0},
+        "gen_raw": {"N": 45.0, "P": 30.0, "K": 120.0},
+        "npk_dose": 500.0
+    },
+    "semangka": {
+        "veg": {"N": "80 kg/ha", "P": "60 kg/ha", "K": "40 kg/ha"},
+        "gen": {"N": "40 kg/ha", "P": "30 kg/ha", "K": "120 kg/ha"},
+        "veg_raw": {"N": 80.0, "P": 60.0, "K": 40.0},
+        "gen_raw": {"N": 40.0, "P": 30.0, "K": 120.0},
+        "npk_dose": 400.0
+    },
+    "cabai": {
+        "veg": {"N": "100 kg/ha", "P": "80 kg/ha", "K": "60 kg/ha"},
+        "gen": {"N": "50 kg/ha", "P": "40 kg/ha", "K": "120 kg/ha"},
+        "veg_raw": {"N": 100.0, "P": 80.0, "K": 60.0},
+        "gen_raw": {"N": 50.0, "P": 40.0, "K": 120.0},
+        "npk_dose": 500.0
+    },
+    "tomat": {
+        "veg": {"N": "100 kg/ha", "P": "90 kg/ha", "K": "60 kg/ha"},
+        "gen": {"N": "50 kg/ha", "P": "45 kg/ha", "K": "150 kg/ha"},
+        "veg_raw": {"N": 100.0, "P": 90.0, "K": 60.0},
+        "gen_raw": {"N": 50.0, "P": 45.0, "K": 150.0},
+        "npk_dose": 500.0
+    },
+    "singkong": {
+        "veg": {"N": "100 kg/ha", "P": "40 kg/ha", "K": "60 kg/ha"},
+        "gen": {"N": "50 kg/ha", "P": "20 kg/ha", "K": "150 kg/ha"},
+        "veg_raw": {"N": 100.0, "P": 40.0, "K": 60.0},
+        "gen_raw": {"N": 50.0, "P": 20.0, "K": 150.0},
+        "npk_dose": 400.0
+    },
+    "kedelai": {
+        "veg": {"N": "30 kg/ha", "P": "60 kg/ha", "K": "50 kg/ha"},
+        "gen": {"N": "15 kg/ha", "P": "30 kg/ha", "K": "80 kg/ha"},
+        "veg_raw": {"N": 30.0, "P": 60.0, "K": 50.0},
+        "gen_raw": {"N": 15.0, "P": 30.0, "K": 80.0},
+        "npk_dose": 200.0
+    }
+}
+
 
 # ==============================================================
 # FUZZY LOGIC ENGINE
@@ -274,12 +340,9 @@ def build_agro_rules(crops_data, req, fertilizers_data):
 
     rules.append(Rule(
         name="R05_Nutrient_Requirements",
-        condition=lambda facts: any(f.name.startswith("crop_eligible_") for f in facts),
-        action=lambda facts: [
-            Fact("veg_nutrients", {"N": 90.0, "P": 45.0, "K": 30.0}),
-            Fact("gen_nutrients", {"N": 45.0, "P": 20.0, "K": 60.0})
-        ],
-        description="Menetapkan kebutuhan nutrisi N-P-K standar untuk fase vegetatif (N-tinggi) dan generatif (K-tinggi)."
+        condition=lambda facts: any(f.name == "top_crops" for f in facts),
+        action=lambda facts: _get_dynamic_nutrients_facts(facts),
+        description="Menetapkan kebutuhan nutrisi N-P-K spesifik tanaman untuk fase vegetatif dan generatif."
     ))
 
     rules.append(Rule(
@@ -313,6 +376,32 @@ def _select_top_crops(facts, crops_data, req):
     if not eligible: eligible = [(c, 0.5) for c in crops_data]
     return [Fact("top_crops", eligible)]
 
+def _get_dynamic_nutrients_facts(facts):
+    top_crops = next((f.value for f in facts if f.name == "top_crops"), None)
+    top_crop_name = ""
+    if top_crops and len(top_crops) > 0:
+        top_crop_name = top_crops[0][0]["name"].lower()
+
+    n_req = {
+        "veg": {"N": 90.0, "P": 45.0, "K": 30.0},
+        "gen": {"N": 45.0, "P": 20.0, "K": 60.0},
+        "npk_dose": 600.0
+    }
+    for key, vals in CROP_NUTRIENT_REQUIREMENTS.items():
+        if key in top_crop_name:
+            n_req = {
+                "veg": vals["veg_raw"],
+                "gen": vals["gen_raw"],
+                "npk_dose": vals["npk_dose"]
+            }
+            break
+
+    return [
+        Fact("veg_nutrients", n_req["veg"]),
+        Fact("gen_nutrients", n_req["gen"]),
+        Fact("npk_dose", n_req["npk_dose"])
+    ]
+
 def _calculate_costs(facts, fertilizers_data, req):
     f_prices = {f["name"].lower(): f["price"] for f in fertilizers_data}
     p_urea = f_prices.get("urea", 1800.0)
@@ -326,6 +415,7 @@ def _calculate_costs(facts, fertilizers_data, req):
     gen_n = next((f.value.get("N", 45.0) for f in facts if f.name == "gen_nutrients"), 45.0)
     gen_p = next((f.value.get("P", 20.0) for f in facts if f.name == "gen_nutrients"), 20.0)
     gen_k = next((f.value.get("K", 60.0) for f in facts if f.name == "gen_nutrients"), 60.0)
+    npk_dose = next((f.value for f in facts if f.name == "npk_dose"), 600.0)
 
     tot_nutrients = {
         "urea": (veg_n + gen_n) * req.land_area_ha / 0.46,
@@ -333,7 +423,7 @@ def _calculate_costs(facts, fertilizers_data, req):
         "kcl": (veg_k + gen_k) * req.land_area_ha / 0.60
     }
     cost_single = (tot_nutrients["urea"] * p_urea) + (tot_nutrients["sp36"] * p_sp36) + (tot_nutrients["kcl"] * p_kcl)
-    npk_qty_total = (350.0 + 250.0) * req.land_area_ha
+    npk_qty_total = npk_dose * req.land_area_ha
     cost_npk = npk_qty_total * p_npk
 
     return [Fact("cost_analysis", {"cost_single": round(cost_single, 2), "cost_npk": round(cost_npk, 2), "tot_nutrients": tot_nutrients})]
@@ -429,20 +519,56 @@ async def get_recommendation(req: RecommendationRequest, db: Session) -> dict:
 
     # Helper: process AI result into final response dict
     def process_ai_result(ai_result: dict, ai_mode: str, model_name: str) -> dict:
-        cost_npk = float(ai_result.get("fertilization_plan", {}).get("cost_comparison", {}).get("npk_compound", {}).get("total_cost", 0.0))
-        cost_single = float(ai_result.get("fertilization_plan", {}).get("cost_comparison", {}).get("single_fertilizer_mix", {}).get("total_cost", 0.0))
+        f_prices = {f["name"].lower(): f["price"] for f in fertilizers_data}
+        p_urea = f_prices.get("urea", 1800.0)
+        p_sp36 = f_prices.get("sp-36", 2000.0)
+        p_kcl = f_prices.get("kcl", 9500.0)
+        p_npk = next((v for k, v in f_prices.items() if "npk" in k), 2300.0)
 
-        qty_npk = 600.0 * req.land_area_ha
-        qty_urea = 135.0 * req.land_area_ha / 0.46
-        qty_sp36 = 65.0 * req.land_area_ha / 0.36
-        qty_kcl = 90.0 * req.land_area_ha / 0.60
-        qty_single = qty_urea + qty_sp36 + qty_kcl
+        top_crop_cost_npk = 0.0
+        top_crop_cost_single = 0.0
 
-        for crop_rec in ai_result.get("recommended_crops", []):
+        for idx, crop_rec in enumerate(ai_result.get("recommended_crops", [])):
             db_crop = next((c for c in db_crops if c.name.lower() in crop_rec.get("name", "").lower() or crop_rec.get("name", "").lower() in c.name.lower()), None)
             y_ha = db_crop.yield_per_ha if db_crop else 6000.0
             s_ha = db_crop.seed_cost_per_ha if db_crop else 375000.0
             price_kg = float(crop_rec.get("estimated_price_per_kg", db_crop.estimated_price_per_kg if db_crop else 5200.0))
+
+            crop_name_lower = crop_rec.get("name", "").lower()
+            n_req = {
+                "veg": {"N": 90.0, "P": 45.0, "K": 30.0},
+                "gen": {"N": 45.0, "P": 20.0, "K": 60.0},
+                "npk_dose": 600.0
+            }
+            for key, vals in CROP_NUTRIENT_REQUIREMENTS.items():
+                if key in crop_name_lower:
+                    n_req = {
+                        "veg": vals["veg_raw"],
+                        "gen": vals["gen_raw"],
+                        "npk_dose": vals["npk_dose"]
+                    }
+                    break
+
+            veg_n = n_req["veg"]["N"]
+            veg_p = n_req["veg"]["P"]
+            veg_k = n_req["veg"]["K"]
+            gen_n = n_req["gen"]["N"]
+            gen_p = n_req["gen"]["P"]
+            gen_k = n_req["gen"]["K"]
+            npk_dose = n_req["npk_dose"]
+
+            qty_npk = npk_dose * req.land_area_ha
+            qty_urea = (veg_n + gen_n) * req.land_area_ha / 0.46
+            qty_sp36 = (veg_p + gen_p) * req.land_area_ha / 0.36
+            qty_kcl = (veg_k + gen_k) * req.land_area_ha / 0.60
+            qty_single = qty_urea + qty_sp36 + qty_kcl
+
+            crop_cost_npk = qty_npk * p_npk
+            crop_cost_single = (qty_urea * p_urea) + (qty_sp36 * p_sp36) + (qty_kcl * p_kcl)
+
+            if idx == 0:
+                top_crop_cost_npk = crop_cost_npk
+                top_crop_cost_single = crop_cost_single
 
             harvest_revenue = y_ha * req.land_area_ha * price_kg
             seed_cost = s_ha * req.land_area_ha
@@ -450,10 +576,10 @@ async def get_recommendation(req: RecommendationRequest, db: Session) -> dict:
             crop_rec["yield_per_ha"] = y_ha
             crop_rec["seed_cost_per_ha"] = s_ha
             crop_rec["harvest_revenue"] = harvest_revenue
-            crop_rec["fertilizer_cost_npk"] = cost_npk
-            crop_rec["fertilizer_cost_single"] = cost_single
-            crop_rec["profit_npk"] = harvest_revenue - (seed_cost + cost_npk)
-            crop_rec["profit_single"] = harvest_revenue - (seed_cost + cost_single)
+            crop_rec["fertilizer_cost_npk"] = crop_cost_npk
+            crop_rec["fertilizer_cost_single"] = crop_cost_single
+            crop_rec["profit_npk"] = harvest_revenue - (seed_cost + crop_cost_npk)
+            crop_rec["profit_single"] = harvest_revenue - (seed_cost + crop_cost_single)
             crop_rec["fertilizer_qty_npk"] = qty_npk
             crop_rec["fertilizer_qty_single"] = qty_single
             crop_rec["fertilizer_urea_kg"] = qty_urea
@@ -464,8 +590,8 @@ async def get_recommendation(req: RecommendationRequest, db: Session) -> dict:
             crop_rec["seed_cost_per_ha_str"] = fmt_rp(s_ha)
             crop_rec["seed_cost_total_str"] = fmt_rp(seed_cost)
             crop_rec["harvest_revenue_str"] = fmt_rp(harvest_revenue)
-            crop_rec["fertilizer_cost_npk_str"] = fmt_rp(cost_npk)
-            crop_rec["fertilizer_cost_single_str"] = fmt_rp(cost_single)
+            crop_rec["fertilizer_cost_npk_str"] = fmt_rp(crop_cost_npk)
+            crop_rec["fertilizer_cost_single_str"] = fmt_rp(crop_cost_single)
             crop_rec["profit_npk_str"] = fmt_rp(crop_rec["profit_npk"])
             crop_rec["profit_single_str"] = fmt_rp(crop_rec["profit_single"])
             crop_rec["fertilizer_qty_npk_str"] = fmt_kg(qty_npk)
@@ -476,28 +602,48 @@ async def get_recommendation(req: RecommendationRequest, db: Session) -> dict:
 
         ai_result["ai_mode"] = ai_mode
 
+        if ai_result.get("recommended_crops"):
+            top_crop_name = ai_result["recommended_crops"][0]["name"].lower()
+            top_vals = None
+            for key, vals in CROP_NUTRIENT_REQUIREMENTS.items():
+                if key in top_crop_name:
+                    top_vals = vals
+                    break
+            if top_vals:
+                if "fertilization_plan" not in ai_result:
+                    ai_result["fertilization_plan"] = {}
+                ai_result["fertilization_plan"]["vegetative_phase"] = top_vals["veg"]
+                ai_result["fertilization_plan"]["generative_phase"] = top_vals["gen"]
+
         cost_comp = ai_result.get("fertilization_plan", {}).get("cost_comparison", {})
         if cost_comp:
             if "npk_compound" in cost_comp:
-                cost_comp["npk_compound"]["total_cost_str"] = fmt_rp(cost_npk)
-                cost_comp["npk_compound"]["pct"] = (cost_npk / max(cost_npk, cost_single, 1.0)) * 100
+                cost_comp["npk_compound"]["total_cost"] = top_crop_cost_npk
+                cost_comp["npk_compound"]["total_cost_str"] = fmt_rp(top_crop_cost_npk)
+                cost_comp["npk_compound"]["pct"] = (top_crop_cost_npk / max(top_crop_cost_npk, top_crop_cost_single, 1.0)) * 100
             if "single_fertilizer_mix" in cost_comp:
-                cost_comp["single_fertilizer_mix"]["total_cost_str"] = fmt_rp(cost_single)
-                cost_comp["single_fertilizer_mix"]["pct"] = (cost_single / max(cost_npk, cost_single, 1.0)) * 100
-            diff = abs(cost_npk - cost_single)
+                cost_comp["single_fertilizer_mix"]["total_cost"] = top_crop_cost_single
+                cost_comp["single_fertilizer_mix"]["total_cost_str"] = fmt_rp(top_crop_cost_single)
+                cost_comp["single_fertilizer_mix"]["pct"] = (top_crop_cost_single / max(top_crop_cost_npk, top_crop_cost_single, 1.0)) * 100
+            diff = abs(top_crop_cost_npk - top_crop_cost_single)
             cost_comp["savings_str"] = fmt_rp(diff)
-            cost_comp["savings_pct"] = (diff / max(cost_npk, cost_single, 1)) * 100
-            cost_comp["is_single_cheaper"] = cost_single < cost_npk
+            cost_comp["savings_pct"] = (diff / max(top_crop_cost_npk, top_crop_cost_single, 1)) * 100
+            cost_comp["is_single_cheaper"] = top_crop_cost_single < top_crop_cost_npk
+
+            if top_crop_cost_single < top_crop_cost_npk:
+                cost_comp["recommendation"] = f"Meracik campuran pupuk tunggal secara mandiri menghemat pengeluaran Anda sebesar {cost_comp['savings_pct']:.1f}% (Hemat {cost_comp['savings_str']}) untuk lahan seluas {req.land_area_ha} ha."
+            else:
+                cost_comp["recommendation"] = f"Penggunaan kombinasi formula pupuk majemuk NPK Phonska jauh lebih ekonomis sekitar {cost_comp['savings_pct']:.1f}% (Hemat {cost_comp['savings_str']}) di pasaran."
 
         ai_result["reasoning_chain"] = [
-            {"step": 1, "icon": "🔍", "title": "Data Retrieval", "description": "Mengambil data baseline komoditas dari DB lokal serta menyinkronkan live market prices BAPPEBTI."},
-            {"step": 2, "icon": "🧠", "title": f"Neural AI Inference ({model_name})", "description": f"Memproses kondisi spesifik lahan terintegrasi dengan model {model_name}."},
-            {"step": 3, "icon": "📊", "title": "Optimasi Finansial", "description": f"Menganalisis perbandingan efisiensi biaya pemupukan campuran tunggal vs majemuk untuk luas {req.land_area_ha} ha."}
+            {"step": 1, "icon": "🔍", "title": "Penyelarasan Data", "description": "Mengambil data baseline komoditas dari DB lokal serta menyinkronkan live market prices BAPPEBTI."},
+            {"step": 2, "icon": "⚙️", "title": f"Evaluasi Karakteristik Tanah ({model_name})", "description": f"Memproses kondisi spesifik lahan terintegrasi dengan model komparasi {model_name}."},
+            {"step": 3, "icon": "📊", "title": "Optimasi Finansial", "description": f"Menganalisis perbandingan efisiensi biaya pemupukan campuran tunggal vs majemuk untuk lahan seluas {req.land_area_ha} ha."}
         ]
         ai_result["analysis_summary"] = (
             f"Analisis berbasis {model_name} berhasil dilakukan untuk wilayah {req.location}. "
             f"Sistem mengevaluasi kecocokan tanah {req.soil_type} di ketinggian {req.elevation_mdpl} mdpl "
-            f"untuk menghasilkan kalkulasi agronomis yang optimal bagi petani."
+            f"untuk menghasilkan rekomendasi agronomis yang optimal bagi petani."
         )
         return ai_result
 
