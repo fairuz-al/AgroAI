@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="160 110 180 240" width="100%" height="100%">
+  <defs>
+    <style>
+      .green-fill { fill: #12B76A; }
+      .navy-fill { fill: #111E55; }
+      .green-stroke { stroke: #12B76A; stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .navy-stroke { stroke: #111E55; stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+    </style>
+  </defs>
+
+  <!-- === SPROUT & LEAVES (Green) === -->
+  <g id="sprout">
+    <!-- Center Stem of Sprout -->
+    <path d="M250,270 L250,200" class="green-stroke" stroke-width="8" />
+    
+    <!-- Top Right Leaf -->
+    <path d="M250,195 C250,150 280,120 295,120 C295,145 270,180 250,195 Z" class="green-fill" />
+    
+    <!-- Left Leaf -->
+    <path d="M250,200 C210,200 205,160 210,150 C230,150 245,180 250,200 Z" class="green-fill" />
+    
+    <!-- Right Leaf -->
+    <path d="M250,180 C285,180 290,150 295,145 C285,140 260,165 250,180 Z" class="green-fill" />
+    
+    <!-- Left Thin Branch with Node -->
+    <path d="M250,170 C230,150 215,130 215,135" class="green-stroke" stroke-width="4" />
+    <circle cx="215" cy="135" r="7" class="green-fill" />
+  </g>
+
+  <!-- === CIRCUIT TRUNK & ROOTS (Navy & Green) === -->
+  <g id="circuit-roots">
+    <!-- Central downward trunk -->
+    <path d="M250,270 L250,335" class="green-stroke" stroke-width="8" />
+    <circle cx="250" cy="335" r="8" class="green-fill" />
+
+    <!-- Left Main Branches (Navy) -->
+    <!-- Far left node branch -->
+    <path d="M242,260 L205,280 L180,280" class="navy-stroke" />
+    <circle cx="180" cy="280" r="10" class="green-stroke" stroke-width="5" fill="#ffffff" />
+    <circle cx="180" cy="280" r="4" class="green-fill" />
+
+    <!-- Middle left down branch -->
+    <path d="M242,270 L215,295 L215,310 L195,310 L195,335" class="navy-stroke" />
+    <circle cx="195" cy="335" r="7" class="navy-fill" />
+
+    <!-- Lower left branch -->
+    <path d="M242,285 L230,305 L230,330" class="navy-stroke" />
+    <circle cx="230" cy="330" r="7" class="navy-fill" />
+
+
+    <!-- Right Main Branches (Navy) -->
+    <!-- Far right node branch -->
+    <path d="M258,260 L295,280 L320,280" class="navy-stroke" />
+    <circle cx="320" cy="280" r="10" class="green-stroke" stroke-width="5" fill="#ffffff" />
+    <circle cx="320" cy="280" r="4" class="green-fill" />
+
+    <!-- Middle right down branch -->
+    <path d="M258,270 L285,295 L285,310 L305,310 L305,335" class="navy-stroke" />
+    <circle cx="305" cy="335" r="7" class="navy-fill" />
+
+    <!-- Lower right branch -->
+    <path d="M258,285 L270,305 L270,330" class="navy-stroke" />
+    <circle cx="270" cy="330" r="7" class="navy-fill" />
+  </g>
+</svg>

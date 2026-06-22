@@ -1,36 +1,41 @@
 /* ============================================
-   AgroAI Design System — Light Dashboard
+   AgroAI Design System — Light Dashboard (Redesigned)
    ============================================ */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
-  --bg-base: #f8fafc;
+  --bg-base: #f4f6fa;
   --bg-sidebar: #ffffff;
   --bg-card: #ffffff;
   --bg-input: #f8fafc;
 
-  --primary: #059669;
-  --primary-light: #10b981;
-  --primary-dark: #047857;
-  --primary-bg: rgba(5, 150, 105, 0.06);
-  --primary-border: rgba(5, 150, 105, 0.15);
+  --primary: #12B76A; /* Logo Emerald/Mint Green */
+  --primary-light: #38ef7d;
+  --primary-dark: #0e9254;
+  --primary-bg: rgba(18, 183, 106, 0.06);
+  --primary-border: rgba(18, 183, 106, 0.15);
 
-  --accent-blue: #2563eb;
-  --accent-orange: #d97706;
-  --accent-red: #dc2626;
-  --accent-purple: #7c3aed;
+  --accent-navy: #111E55; /* Logo Midnight Navy Blue */
+  --accent-navy-light: #1D2D7D;
+  --accent-navy-dark: #0A1233;
+  --accent-navy-bg: rgba(17, 30, 85, 0.05);
 
-  --text-primary: #0f172a;
-  --text-secondary: #334155;
-  --text-tertiary: #64748b;
+  --accent-blue: #2970FF;
+  --accent-orange: #F79009;
+  --accent-red: #F04438;
+  --accent-purple: #7A5AF8;
+
+  --text-primary: #0F132E; /* Tinted Dark Slate */
+  --text-secondary: #344054;
+  --text-tertiary: #667085;
   --text-white: #ffffff;
 
-  --border: #e2e8f0;
-  --border-light: #f1f5f9;
+  --border: #eaecf0;
+  --border-light: #f2f4f7;
 
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+  --shadow-sm: 0 1px 2px 0 rgba(16, 24, 40, 0.05);
+  --shadow-md: 0 4px 8px -2px rgba(16, 24, 40, 0.06), 0 2px 4px -2px rgba(16, 24, 40, 0.04);
+  --shadow-lg: 0 12px 16px -4px rgba(16, 24, 40, 0.08), 0 4px 6px -2px rgba(16, 24, 40, 0.03);
 
   --radius-sm: 8px;
   --radius-md: 12px;
@@ -38,11 +43,11 @@
   --radius-xl: 20px;
   --radius-full: 9999px;
 
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
   --sidebar-width: 250px;
-  --transition: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Reset */
@@ -95,6 +100,11 @@ h4 {
   flex-direction: column;
   z-index: 100;
   padding: 1.5rem 0;
+  transition: transform var(--transition);
+}
+
+body.sidebar-collapsed .sidebar {
+  transform: translateX(-100%);
 }
 
 .sidebar-brand {
@@ -227,6 +237,11 @@ h4 {
   margin-left: var(--sidebar-width);
   min-height: 100vh;
   padding: 1.5rem 2rem;
+  transition: margin-left var(--transition);
+}
+
+body.sidebar-collapsed .main-content {
+  margin-left: 0;
 }
 
 /* Header */
@@ -952,24 +967,36 @@ h4 {
 }
 
 /* ============================================
-   Mobile Toggle
+   Sidebar Collapse Toggle Button
    ============================================ */
 .sidebar-toggle {
-  display: none;
+  display: flex;
   position: fixed;
-  top: .75rem;
-  left: .75rem;
+  top: 1rem;
+  left: 1.5rem;
   z-index: 200;
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   color: var(--text-primary);
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   cursor: pointer;
   align-items: center;
   justify-content: center;
+  box-shadow: var(--shadow-sm);
+  transition: left var(--transition), transform var(--transition);
+}
+
+.sidebar-toggle:hover {
+  background: var(--border-light);
+  color: var(--primary);
+}
+
+/* Position when sidebar is open */
+body:not(.sidebar-collapsed) .sidebar-toggle {
+  left: calc(var(--sidebar-width) + 1.5rem);
 }
 
 .sidebar-overlay {
@@ -1082,4 +1109,438 @@ h4 {
 .sources-section,
 .sources-links {
   display: none;
+}
+
+/* ============================================
+   Sorell-inspired Landing Page Hero Section
+   ============================================ */
+.landing-hero {
+  position: relative;
+  background: linear-gradient(135deg, #f0fdf4 0%, #f5f7fa 50%, #eef2f6 100%);
+  color: var(--text-primary);
+  padding: 5.5rem 2.5rem 11.5rem;
+  text-align: center;
+  margin: -1.5rem -2rem 2.5rem -2rem; /* Extend to bleed to edges of main content */
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+
+.landing-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle at 10% 20%, rgba(18, 183, 106, 0.06) 0%, transparent 40%),
+                    radial-gradient(circle at 90% 80%, rgba(122, 90, 248, 0.05) 0%, transparent 40%);
+  pointer-events: none;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 10;
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+.hero-logo-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.hero-logo {
+  width: 110px;
+  height: 110px;
+  filter: drop-shadow(0 8px 16px rgba(18, 183, 106, 0.15));
+  animation: hero-float 6s ease-in-out infinite;
+}
+
+.hero-brand-text {
+  font-family: var(--font-sans);
+  font-size: 2.8rem;
+  font-weight: 800;
+  margin-top: 0.5rem;
+  letter-spacing: -2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.hero-brand-text .agro-text {
+  color: #000000;
+  font-weight: 800;
+  text-transform: lowercase;
+}
+
+.hero-brand-text .ai-text {
+  color: var(--primary);
+  font-weight: 300;
+  margin-left: 1px;
+}
+
+.landing-hero h1 {
+  font-size: 2.8rem;
+  font-weight: 800;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+  letter-spacing: -1.2px;
+  color: var(--text-primary);
+}
+
+.landing-hero h1 span.gradient-text {
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}
+
+.landing-hero p.hero-subtitle {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  max-width: 620px;
+  margin: 0 auto 2rem;
+  line-height: 1.6;
+  font-weight: 400;
+}
+
+.btn-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .85rem 2rem;
+  background: var(--primary);
+  color: white;
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  font-size: .9rem;
+  letter-spacing: .02em;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(18, 183, 106, 0.4);
+  transition: all var(--transition);
+  text-transform: uppercase;
+}
+
+.btn-cta:hover {
+  background: var(--primary-light);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(18, 183, 106, 0.5);
+}
+
+.btn-cta i {
+  font-size: 1.1rem;
+}
+
+/* Wavy Fields Background (Sorell-inspired) */
+.hero-waves {
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: 200%;
+  height: 150px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.wave-path {
+  transform-origin: 50% 100%;
+  animation: wave-sway 18s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+}
+
+/* Multi-colored field waves matching corporate palette + Sorell style */
+.wave-path.field-gold {
+  fill: #F79009;
+  opacity: 0.07;
+  animation-duration: 25s;
+  animation-delay: -2s;
+}
+
+.wave-path.field-lavender {
+  fill: #7A5AF8;
+  opacity: 0.06;
+  animation-duration: 20s;
+  animation-delay: -5s;
+}
+
+.wave-path.field-green-light {
+  fill: var(--primary);
+  opacity: 0.12;
+  animation-duration: 15s;
+  animation-delay: -7s;
+}
+
+.wave-path.field-bg-match {
+  fill: var(--bg-base);
+  opacity: 1;
+  animation-duration: 12s;
+}
+
+@keyframes hero-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes wave-sway {
+  0%, 100% { transform: translateX(0) scaleY(1); }
+  50% { transform: translateX(-25%) scaleY(0.92); }
+}
+
+/* ============================================
+   Territory / Manual Location Search Component
+   ============================================ */
+.search-container {
+  position: relative;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 1.25rem;
+}
+
+.search-label {
+  font-size: .68rem;
+  font-weight: 700;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  display: block;
+  margin-bottom: .4rem;
+}
+
+.search-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.search-input-wrapper i.search-icon {
+  position: absolute;
+  left: .85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-tertiary);
+  font-size: 1rem;
+  pointer-events: none;
+}
+
+.search-input-wrapper input.search-input {
+  width: 100%;
+  padding: .75rem 1rem .75rem 2.4rem;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: var(--radius-md);
+  font-size: .85rem;
+  color: var(--text-primary);
+  outline: none;
+  font-family: var(--font-sans);
+  transition: all var(--transition);
+}
+
+.search-input-wrapper input.search-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(18, 183, 106, 0.12);
+  background: #ffffff;
+}
+
+/* Autocomplete suggestion drop list */
+.search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  margin-top: .4rem;
+  max-height: 220px;
+  overflow-y: auto;
+  z-index: 999;
+  box-shadow: var(--shadow-lg);
+  display: none;
+}
+
+.search-result-item {
+  padding: .65rem 1rem;
+  font-size: .8rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  border-bottom: 1px solid var(--border-light);
+  transition: background var(--transition);
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+.search-result-item:hover {
+  background: var(--primary-bg);
+  color: var(--primary);
+}
+
+.search-result-item i {
+  font-size: .9rem;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.search-result-item:hover i {
+  color: var(--primary);
+}
+
+/* ============================================
+   Glassmorphic UI Improvements & Lucide Icons
+   ============================================ */
+.sidebar-brand .brand-icon {
+  background: none;
+  width: auto;
+  height: auto;
+}
+
+.sidebar-brand .brand-icon img {
+  width: 32px;
+  height: 32px;
+}
+
+/* Nav Item Icon Alignment */
+.sidebar-nav-item {
+  display: flex;
+  align-items: center;
+}
+
+.sidebar-nav-item i {
+  width: 18px;
+  height: 18px;
+  color: var(--text-tertiary);
+  transition: color var(--transition);
+}
+
+.sidebar-nav-item.active i {
+  color: var(--primary);
+}
+
+.sidebar-nav-item:hover i {
+  color: var(--text-secondary);
+}
+
+/* Meta Card Icon */
+.meta-icon {
+  color: var(--primary);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 24px;
+}
+
+.meta-icon i {
+  width: 20px;
+  height: 20px;
+}
+
+/* Decision tree nodes */
+.ai-step .step-dot {
+  background: var(--primary-bg);
+  border: 1px solid var(--primary);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ai-step .step-dot.red {
+  background: rgba(240, 68, 56, 0.05);
+  border: 1px solid var(--accent-red);
+  color: var(--accent-red);
+}
+
+.ai-step .step-dot i {
+  width: 14px;
+  height: 14px;
+}
+
+/* Card badges */
+.panel-header .badge {
+  font-size: .62rem;
+  background: var(--primary-bg);
+  color: var(--primary);
+  border: 1px solid var(--primary-border);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  margin-left: auto;
+  font-weight: 700;
+}
+
+.panel-header.dark .badge {
+  background: var(--border-light);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+.panel {
+  border-color: var(--border);
+  box-shadow: 0 4px 12px -2px rgba(16, 24, 40, 0.03), 0 2px 6px -2px rgba(16, 24, 40, 0.02);
+}
+
+.panel:hover {
+  box-shadow: 0 10px 20px -5px rgba(16, 24, 40, 0.05);
+}
+
+/* Circular ring scores */
+.rec-ring .ring-fill {
+  stroke: var(--primary);
+}
+
+/* Profit best label badge */
+.best-badge {
+  font-size: .58rem;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: var(--primary-bg);
+  color: var(--primary);
+  border: 1px solid var(--primary-border);
+  font-weight: 700;
+  margin-left: .4rem;
+}
+
+.best-badge.blue {
+  background: rgba(41, 112, 255, 0.05);
+  color: var(--accent-blue);
+  border: 1px solid rgba(41, 112, 255, 0.15);
+}
+
+/* Profit Values */
+.profit-value {
+  font-size: .88rem;
+  font-weight: 800;
+  margin-top: .3rem;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+
+.profit-value.highlight {
+  color: var(--primary);
+}
+
+/* Map Center Pin overlay styles */
+.map-center-pin {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -100%);
+  pointer-events: none;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: -10px; /* Offset upward to account for map container centers */
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25));
+}
+
+.pin-shadow {
+  width: 8px;
+  height: 3px;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 50%;
+  margin-top: -1px;
 }
