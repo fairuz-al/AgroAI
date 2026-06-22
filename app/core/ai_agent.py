@@ -280,7 +280,7 @@ class ForwardChainingEngine:
                     new_facts = rule.execute(self.facts)
                     reasoning_chain.append({
                         "step": len(reasoning_chain) + 1,
-                        "icon": "⚙️",
+                        "icon": "cpu",
                         "title": f"Rule: {rule.name}",
                         "description": rule.description
                     })
@@ -636,9 +636,9 @@ async def get_recommendation(req: RecommendationRequest, db: Session) -> dict:
                 cost_comp["recommendation"] = f"Penggunaan kombinasi formula pupuk majemuk NPK Phonska jauh lebih ekonomis sekitar {cost_comp['savings_pct']:.1f}% (Hemat {cost_comp['savings_str']}) di pasaran."
 
         ai_result["reasoning_chain"] = [
-            {"step": 1, "icon": "🔍", "title": "Penyelarasan Data", "description": "Mengambil data baseline komoditas dari DB lokal serta menyinkronkan live market prices BAPPEBTI."},
-            {"step": 2, "icon": "⚙️", "title": f"Evaluasi Karakteristik Tanah ({model_name})", "description": f"Memproses kondisi spesifik lahan terintegrasi dengan model komparasi {model_name}."},
-            {"step": 3, "icon": "📊", "title": "Optimasi Finansial", "description": f"Menganalisis perbandingan efisiensi biaya pemupukan campuran tunggal vs majemuk untuk lahan seluas {req.land_area_ha} ha."}
+            {"step": 1, "icon": "search", "title": "Penyelarasan Data", "description": "Mengambil data baseline komoditas dari DB lokal serta menyinkronkan live market prices BAPPEBTI."},
+            {"step": 2, "icon": "cpu", "title": f"Evaluasi Karakteristik Tanah ({model_name})", "description": f"Memproses kondisi spesifik lahan terintegrasi dengan model komparasi {model_name}."},
+            {"step": 3, "icon": "trending-up", "title": "Optimasi Finansial", "description": f"Menganalisis perbandingan efisiensi biaya pemupukan campuran tunggal vs majemuk untuk lahan seluas {req.land_area_ha} ha."}
         ]
         ai_result["analysis_summary"] = (
             f"Analisis berbasis {model_name} berhasil dilakukan untuk wilayah {req.location}. "
@@ -729,8 +729,8 @@ async def get_recommendation(req: RecommendationRequest, db: Session) -> dict:
 
     rules_chain = engine.run()
     reasoning_chain = [
-        {"step": 1, "icon": "📥", "title": "Input Collection", "description": f"Menerima input parameter lahan: {req.soil_type}, {req.elevation_mdpl} mdpl."},
-        {"step": 2, "icon": "🔍", "title": "Data Pruning", "description": f"Menyaring kandidat komoditas berdasarkan kecocokan wilayah terdekat."}
+        {"step": 1, "icon": "download", "title": "Input Collection", "description": f"Menerima input parameter lahan: {req.soil_type}, {req.elevation_mdpl} mdpl."},
+        {"step": 2, "icon": "search", "title": "Data Pruning", "description": f"Menyaring kandidat komoditas berdasarkan kecocokan wilayah terdekat."}
     ] + rules_chain
 
     top_crops_fact = engine.get_fact_value("top_crops")

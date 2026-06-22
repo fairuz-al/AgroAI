@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="AgroAI — Riwayat Analisis Lahan">
     <title>AgroAI — Riwayat Analisis</title>
-    <link rel="stylesheet" href="/static/css/style.css?v=3">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>">
+    <link rel="stylesheet" href="/static/css/style.css?v=4">
+    <link rel="icon" href="/static/img/logo.svg" type="image/svg+xml">
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
 
@@ -15,7 +16,9 @@
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-brand">
-            <div class="brand-icon">✓</div>
+            <div class="brand-icon">
+                <img src="/static/img/logo.svg" alt="AgroAI logo" style="width: 32px; height: 32px;">
+            </div>
             <div class="brand-text">
                 <span class="brand-name">AgroAI</span>
                 <span class="brand-tag">FUZZY + FORWARD</span>
@@ -23,11 +26,11 @@
         </div>
         <nav class="sidebar-nav">
             <a href="/" class="sidebar-nav-item">
-                <span class="nav-icon">📊</span>
+                <span class="nav-icon"><i data-lucide="layout-dashboard"></i></span>
                 Dashboard Analisis
             </a>
             <a href="/history" class="sidebar-nav-item active">
-                <span class="nav-icon">🕐</span>
+                <span class="nav-icon"><i data-lucide="history"></i></span>
                 History
             </a>
         </nav>
@@ -53,16 +56,18 @@
 
         <!-- History Main Card -->
         <div class="panel">
-            <div class="panel-header" style="background: linear-gradient(135deg, #f59e0b, #d97706); border-bottom: 1px solid var(--border);">
+            <div class="panel-header" style="background: linear-gradient(135deg, var(--accent-orange), #b25e02); color: white; border-bottom: 1px solid var(--border);">
                 Fase Migrasi Database
             </div>
             <div class="panel-body" style="text-align: center; padding: 3rem 2rem;">
-                <div style="font-size: 3rem; margin-bottom: 1rem;">🗄️</div>
+                <div style="color: var(--accent-orange); margin-bottom: 1rem;">
+                    <i data-lucide="database" style="width: 48px; height: 48px;"></i>
+                </div>
                 <h2 style="font-size: 1.5rem; color: var(--text-primary); margin-bottom: 0.75rem;">Integrasi Database Sedang Berjalan</h2>
                 <p style="color: var(--text-secondary); max-width: 500px; margin: 0 auto 1.5rem; font-size: 0.95rem; line-height: 1.6;">
                     Fitur penyimpanan riwayat analisis lahan saat ini dalam status <strong>Ongoing</strong>. Kami sedang mempersiapkan migrasi database untuk mendukung penyimpanan data secara persisten dan aman.
                 </p>
-                <div style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: var(--radius-md); font-size: 0.82rem; color: #d97706; font-weight: 600;">
+                <div style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: rgba(247, 144, 9, 0.08); border: 1px solid rgba(247, 144, 9, 0.2); border-radius: var(--radius-md); font-size: 0.82rem; color: #d97706; font-weight: 600;">
                     Status: Menunggu Migrasi Tabel `analysis_history`
                 </div>
             </div>
@@ -118,6 +123,11 @@
     <!-- ========== MAIN SCRIPTS ========== -->
     <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Lucide Icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+
         // Sidebar toggle
         var toggle = document.getElementById('sidebar-toggle');
         var sidebar = document.getElementById('sidebar');

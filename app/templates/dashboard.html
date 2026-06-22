@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="AgroAI — Sistem Rekomendasi Cerdas Komoditas Pertanian Berbasis AI">
     <title>AgroAI — Analisis Lahan Cerdas</title>
-    <link rel="stylesheet" href="/static/css/style.css?v=3">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>">
+    <link rel="stylesheet" href="/static/css/style.css?v=4">
+    <link rel="icon" href="/static/img/logo.svg" type="image/svg+xml">
+    <script src="https://unpkg.com/lucide@latest"></script>
     {% if not google_maps_api_key %}
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     {% endif %}
@@ -18,7 +19,9 @@
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-brand">
-            <div class="brand-icon">✓</div>
+            <div class="brand-icon">
+                <img src="/static/img/logo.svg" alt="AgroAI logo" style="width: 32px; height: 32px;">
+            </div>
             <div class="brand-text">
                 <span class="brand-name">AgroAI</span>
                 <span class="brand-tag">FUZZY + FORWARD</span>
@@ -26,11 +29,11 @@
         </div>
         <nav class="sidebar-nav">
             <a href="/" class="sidebar-nav-item active">
-                <span class="nav-icon">📊</span>
+                <span class="nav-icon"><i data-lucide="layout-dashboard"></i></span>
                 Dashboard Analisis
             </a>
             <a href="/history" class="sidebar-nav-item">
-                <span class="nav-icon">🕐</span>
+                <span class="nav-icon"><i data-lucide="history"></i></span>
                 History
             </a>
         </nav>
@@ -43,21 +46,42 @@
     <!-- ========== MAIN CONTENT ========== -->
     <div class="main-content">
 
-        <!-- Page Header -->
-        <div class="page-header">
+        <!-- Dynamic Hero Landing Section (Sorell-inspired) -->
+        <div class="landing-hero">
+            <div class="hero-content">
+                <div class="hero-logo-wrapper">
+                    <img src="/static/img/logo.svg" class="hero-logo" alt="AgroAI Logo">
+                </div>
+                <h1>Kembangkan Potensi Lahan Bersama <span class="gradient-text">AgroAI</span></h1>
+                <p class="hero-subtitle">Sistem Rekomendasi Cerdas Pemilihan Komoditas Pertanian & Perencanaan Pemupukan Optimal Berbasis Fuzzy Logic dan Forward Chaining</p>
+                <button type="button" class="btn-cta" onclick="document.getElementById('analysis-section').scrollIntoView({behavior: 'smooth'})">
+                    Mulai Analisis Lahan <i data-lucide="arrow-down"></i>
+                </button>
+            </div>
+            
+            <svg class="hero-waves" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320" preserveAspectRatio="none">
+                <path class="wave-path field-gold" d="M0,192 C240,240 480,180 720,224 C960,260 1200,200 1440,160 L1440,320 L0,320 Z"></path>
+                <path class="wave-path field-lavender" d="M0,128 C280,160 560,96 840,160 C1120,224 1260,192 1440,160 L1440,320 L0,320 Z"></path>
+                <path class="wave-path field-green-light" d="M0,224 C360,288 720,160 1080,240 C1260,280 1350,220 1440,192 L1440,320 L0,320 Z"></path>
+                <path class="wave-path field-bg-match" d="M0,256 C240,280 480,200 720,256 C960,312 1200,260 1440,288 L1440,320 L0,320 Z"></path>
+            </svg>
+        </div>
+
+        <!-- Page Header / Anchor for scroll -->
+        <div class="page-header" id="analysis-section">
             <div class="page-header-left">
                 <h1>Analisis Lahan Cerdas</h1>
-                <p>Selamat datang kembali. Silakan perbarui koordinat untuk analisis terbaru.</p>
+                <p>Silakan tentukan wilayah atau masukkan koordinat untuk memulai analisis agronomis.</p>
             </div>
             <div class="status-badge">
-                Status: <span class="optimal">Optimal</span>
+                Status Sistem: <span class="optimal">Optimal</span>
             </div>
         </div>
 
         <!-- Error State -->
         {% if error_message %}
         <div class="error-banner">
-            <span>⚠️</span>
+            <i data-lucide="alert-triangle"></i>
             <span>{{ error_message }}</span>
         </div>
         {% endif %}
@@ -70,19 +94,27 @@
                 <div class="panel">
                     <div class="panel-header green">
                         DATA INPUT LAHAN
-                        <span class="badge">AUTO-GPS</span>
+                        <span class="badge">INTEGRATED</span>
                     </div>
                     <div class="panel-body">
                         <form method="POST" action="/" id="recommendation-form">
                             <!-- GPS Status -->
                             <div class="gps-status" id="gps-status">
                                 <span class="dot"></span>
-                                <span>LIVE GPS — Menunggu koordinat...</span>
+                                <span>Status Lokasi: Menunggu input/GPS...</span>
                             </div>
 
                             <!-- Map -->
                             <div class="gps-map-container">
                                 <div id="gps-map" class="gps-map"></div>
+                                <!-- Fixed Red Center Pin Overlay -->
+                                <div class="map-center-pin">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="36" height="36" fill="#f04438" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                        <circle cx="12" cy="10" r="3" fill="#ffffff"></circle>
+                                    </svg>
+                                    <div class="pin-shadow"></div>
+                                </div>
                                 <div id="map-overlay-info" class="map-overlay-info">
                                     <span id="map-location-text">Menunggu koordinat GPS...</span>
                                 </div>
@@ -133,26 +165,26 @@
                 <!-- Metadata Panel (shown after analysis) -->
                 {% if input_values %}
                 <div class="panel" style="margin-top: 1rem;">
-                    <div class="panel-header dark">METADATA LAHAN</div>
+                    <div class="panel-header dark">METADATA LAHAN <span class="badge">RESOLVED</span></div>
                     <div class="panel-body">
                         <div class="metadata-grid">
                             <div class="meta-card">
-                                <div class="meta-icon">⛰️</div>
+                                <div class="meta-icon"><i data-lucide="mountain"></i></div>
                                 <div class="meta-label">Ketinggian</div>
                                 <div class="meta-value">{{ input_values.elevation_mdpl }} mdpl</div>
                             </div>
                             <div class="meta-card">
-                                <div class="meta-icon">🌱</div>
+                                <div class="meta-icon"><i data-lucide="sprout"></i></div>
                                 <div class="meta-label">Jenis Tanah</div>
                                 <div class="meta-value">{{ input_values.soil_type }}</div>
                             </div>
                             <div class="meta-card">
-                                <div class="meta-icon">📍</div>
+                                <div class="meta-icon"><i data-lucide="map-pin"></i></div>
                                 <div class="meta-label">Wilayah</div>
                                 <div class="meta-value">{{ input_values.location }}</div>
                             </div>
                             <div class="meta-card">
-                                <div class="meta-icon">✓</div>
+                                <div class="meta-icon"><i data-lucide="check-circle"></i></div>
                                 <div class="meta-label">Status</div>
                                 <div class="meta-value">Teranalisis</div>
                             </div>
@@ -244,7 +276,9 @@
                         <div class="ai-steps">
                             {% for step in reasoning_chain %}
                             <div class="ai-step {% if loop.last %}last{% endif %}">
-                                <div class="step-dot {% if loop.index == 2 %}red{% endif %}">{{ step.step }}</div>
+                                <div class="step-dot {% if loop.index == 2 %}red{% endif %}">
+                                    <i data-lucide="{{ step.icon }}"></i>
+                                </div>
                                 <div class="step-content">
                                     <div class="step-label">Langkah {{ step.step }}</div>
                                     <h4 class="{{ 'text-red' if loop.index == 2 else 'text-green' }}">{{ step.title }}</h4>
@@ -291,7 +325,9 @@
                         <!-- Expandable Detail Section -->
                         <div class="rec-detail" style="display:none;">
                             <div class="rec-detail-inner">
-                                <h4 style="font-size:.82rem; font-weight:700; margin-bottom:.75rem; color:var(--text-primary);">💰 Estimasi Finansial — {{ crop.name }}</h4>
+                                <h4 style="font-size:.82rem; font-weight:700; margin-bottom:.75rem; color:var(--text-primary); display:flex; align-items:center; gap:0.4rem;">
+                                    <i data-lucide="wallet" style="width: 16px; height: 16px; color: var(--primary);"></i> Estimasi Finansial — {{ crop.name }}
+                                </h4>
                                 
                                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:.75rem; margin-bottom:.75rem;">
                                     <div style="padding:.6rem; background:var(--primary-bg); border-radius:var(--radius-sm); border:1px solid var(--primary-border);">
@@ -299,7 +335,7 @@
                                         <div style="font-size:.95rem; font-weight:700; color:var(--primary); font-family:var(--font-mono);">{{ crop.harvest_revenue_str }}</div>
                                         <div style="font-size:.68rem; color:var(--text-tertiary);">{{ "{:,.0f}".format(crop.yield_per_ha) }} kg/ha × {{ input_values.land_area_ha }} ha × {{ crop.estimated_price_per_kg_str }}/kg</div>
                                     </div>
-                                    <div style="padding:.6rem; background:rgba(239,68,68,0.05); border-radius:var(--radius-sm); border:1px solid rgba(239,68,68,0.15);">
+                                    <div style="padding:.6rem; background:rgba(240,68,56,0.05); border-radius:var(--radius-sm); border:1px solid rgba(240,68,56,0.15);">
                                         <div style="font-size:.65rem; color:var(--text-tertiary); text-transform:uppercase; font-weight:600;">Biaya Bibit</div>
                                         <div style="font-size:.95rem; font-weight:700; color:var(--accent-red); font-family:var(--font-mono);">{{ crop.seed_cost_total_str }}</div>
                                         <div style="font-size:.68rem; color:var(--text-tertiary);">{{ crop.seed_cost_per_ha_str }}/ha × {{ input_values.land_area_ha }} ha</div>
@@ -308,21 +344,25 @@
 
                                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:.75rem; margin-bottom:.75rem;">
                                     <div style="padding:.6rem; background:var(--bg-input); border-radius:var(--radius-sm); border-left:3px solid var(--primary);">
-                                        <div style="font-size:.65rem; color:var(--text-tertiary); text-transform:uppercase; font-weight:600;">🟢 Pupuk Tunggal</div>
+                                        <div style="font-size:.65rem; color:var(--text-tertiary); text-transform:uppercase; font-weight:600; display:flex; align-items:center; gap:0.3rem;">
+                                            <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--primary);"></span> Pupuk Tunggal
+                                        </div>
                                         <div style="font-size:.68rem; color:var(--text-secondary); margin:.3rem 0;">Urea: {{ crop.fertilizer_urea_kg_str }} kg · SP-36: {{ crop.fertilizer_sp36_kg_str }} kg · KCl: {{ crop.fertilizer_kcl_kg_str }} kg</div>
                                         <div style="font-size:.82rem; font-weight:700; color:var(--text-primary); font-family:var(--font-mono);">Biaya: {{ crop.fertilizer_cost_single_str }}</div>
-                                        <div style="font-size:.88rem; font-weight:800; margin-top:.3rem; {% if crop.profit_single >= crop.profit_npk %}color:var(--primary);{% else %}color:var(--text-secondary);{% endif %} font-family:var(--font-mono);">
+                                        <div class="profit-value {% if crop.profit_single >= crop.profit_npk %}highlight{% endif %}">
                                             Profit: {{ crop.profit_single_str }}
-                                            {% if crop.profit_single >= crop.profit_npk %}<span style="font-size:.55rem; padding:1px 6px; border-radius:var(--radius-full); background:var(--primary-bg); color:var(--primary); border:1px solid var(--primary-border); font-weight:700;">TERBAIK</span>{% endif %}
+                                            {% if crop.profit_single >= crop.profit_npk %}<span class="best-badge">TERBAIK</span>{% endif %}
                                         </div>
                                     </div>
                                     <div style="padding:.6rem; background:var(--bg-input); border-radius:var(--radius-sm); border-left:3px solid var(--accent-blue);">
-                                        <div style="font-size:.65rem; color:var(--text-tertiary); text-transform:uppercase; font-weight:600;">🔵 NPK Majemuk</div>
+                                        <div style="font-size:.65rem; color:var(--text-tertiary); text-transform:uppercase; font-weight:600; display:flex; align-items:center; gap:0.3rem;">
+                                            <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--accent-blue);"></span> NPK Majemuk
+                                        </div>
                                         <div style="font-size:.68rem; color:var(--text-secondary); margin:.3rem 0;">NPK Phonska: {{ crop.fertilizer_qty_npk_str }} kg</div>
                                         <div style="font-size:.82rem; font-weight:700; color:var(--text-primary); font-family:var(--font-mono);">Biaya: {{ crop.fertilizer_cost_npk_str }}</div>
-                                        <div style="font-size:.88rem; font-weight:800; margin-top:.3rem; {% if crop.profit_npk > crop.profit_single %}color:var(--primary);{% else %}color:var(--text-secondary);{% endif %} font-family:var(--font-mono);">
+                                        <div class="profit-value {% if crop.profit_npk > crop.profit_single %}highlight{% endif %}">
                                             Profit: {{ crop.profit_npk_str }}
-                                            {% if crop.profit_npk > crop.profit_single %}<span style="font-size:.55rem; padding:1px 6px; border-radius:var(--radius-full); background:var(--primary-bg); color:var(--primary); border:1px solid var(--primary-border); font-weight:700;">TERBAIK</span>{% endif %}
+                                            {% if crop.profit_npk > crop.profit_single %}<span class="best-badge blue">TERBAIK</span>{% endif %}
                                         </div>
                                     </div>
                                 </div>
@@ -417,8 +457,6 @@
     <!-- ========== MAPS SCRIPTS ========== -->
     <script>
     let map = null;
-    let marker = null;
-    let circle = null;
     let mapInitialized = false;
 
     window.updateCoordinates = function(lat, lng, source) {
@@ -427,10 +465,22 @@
         const lonInput = document.getElementById('longitude');
         const gpsStatus = document.getElementById('gps-status');
         if (latInput && lonInput) { latInput.value = lat; lonInput.value = lng; }
-        if (typeof initMap === 'function') { initMap(lat, lng); }
+        
+        // Only pan/center the map if the update didn't originate from dragging the map itself
+        if (source !== 'Geser Peta' && map && mapInitialized) {
+            if (typeof google !== 'undefined' && map instanceof google.maps.Map) {
+                map.panTo({ lat: lat, lng: lng });
+            } else if (map.panTo) {
+                map.panTo([lat, lng]);
+            }
+        } else if (!mapInitialized && typeof initMap === 'function') {
+            initMap(lat, lng);
+        }
+        
         if (gpsStatus) {
             gpsStatus.innerHTML = '<span class="dot"></span><span>Lokasi (' + source + '): ' + lat.toFixed(6) + ', ' + lng.toFixed(6) + '</span>';
         }
+        updateOverlayText(lat, lng);
     };
 
     window.updateOverlayText = function(lat, lng) {
@@ -446,12 +496,18 @@
         if (!mapEl || typeof google === 'undefined') return;
         var pos = { lat: lat, lng: lng };
         if (!mapInitialized) {
-            map = new google.maps.Map(mapEl, { center: pos, zoom: 14, mapTypeId: 'hybrid', disableDefaultUI: true, zoomControl: true });
+            map = new google.maps.Map(mapEl, { center: pos, zoom: 15, mapTypeId: 'hybrid', disableDefaultUI: true, zoomControl: true });
             mapInitialized = true;
-            map.addListener('click', function(e) { updateCoordinates(e.latLng.lat(), e.latLng.lng(), 'Klik Peta'); });
-        } else { map.setCenter(pos); }
-        if (marker) marker.setMap(null);
-        marker = new google.maps.Marker({ position: pos, map: map, icon: { path: google.maps.SymbolPath.CIRCLE, scale: 10, fillColor: '#16a34a', fillOpacity: 0.9, strokeColor: '#fff', strokeWeight: 3 } });
+            
+            // Pan map to clicked spot
+            map.addListener('click', function(e) { map.panTo(e.latLng); });
+            
+            // Listen to move/idle to update coordinates at map center
+            map.addListener('idle', function() {
+                var center = map.getCenter();
+                updateCoordinates(center.lat(), center.lng(), 'Geser Peta');
+            });
+        }
         updateOverlayText(lat, lng);
     }
     function onGoogleMapsReady() {
@@ -468,16 +524,20 @@
         if (!mapEl || typeof L === 'undefined') return;
         var pos = [lat, lng];
         if (!mapInitialized) {
-            map = L.map(mapEl, { zoomControl: true, attributionControl: true }).setView(pos, 14);
+            map = L.map(mapEl, { zoomControl: true, attributionControl: true }).setView(pos, 15);
             L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: 'Esri' }).addTo(map);
-            map.on('click', function(e) { updateCoordinates(e.latlng.lat, e.latlng.lng, 'Klik Peta'); });
+            
+            // Pan map to clicked spot
+            map.on('click', function(e) { map.panTo(e.latlng); });
+            
+            // Listen to moveend to update center coordinates
+            map.on('moveend', function() {
+                var center = map.getCenter();
+                updateCoordinates(center.lat, center.lng, 'Geser Peta');
+            });
+            
             mapInitialized = true;
-        } else { map.setView(pos, 14); }
-        if (marker) map.removeLayer(marker);
-        if (circle) map.removeLayer(circle);
-        var icon = L.divIcon({ className: 'custom-leaflet-marker', html: '<div style="width:18px;height:18px;background:#16a34a;border:3px solid #fff;border-radius:50%;box-shadow:0 0 8px rgba(0,0,0,0.4);"></div>', iconSize: [18,18], iconAnchor: [9,9] });
-        marker = L.marker(pos, { icon: icon }).addTo(map);
-        circle = L.circle(pos, { color: '#16a34a', fillColor: '#16a34a', fillOpacity: 0.1, radius: 500 }).addTo(map);
+        }
         updateOverlayText(lat, lng);
     }
     </script>
@@ -486,6 +546,11 @@
     <!-- ========== MAIN SCRIPTS ========== -->
     <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Lucide Icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+
         // Form submit loading state
         var form = document.getElementById('recommendation-form');
         var btn = document.getElementById('submit-btn');
@@ -501,18 +566,18 @@
 
         function detectGPS() {
             if (!latInput || !lonInput || !gpsStatus) return;
-            gpsStatus.innerHTML = '<span class="dot" style="background:#f59e0b"></span><span>Menghubungi satelit GPS...</span>';
+            gpsStatus.innerHTML = '<span class="dot" style="background:#f79009"></span><span>Menghubungi satelit GPS...</span>';
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     function(pos) { updateCoordinates(pos.coords.latitude, pos.coords.longitude, 'GPS Aktif'); },
                     function(err) {
                         updateCoordinates(-7.571211, 110.824715, 'Fallback');
-                        if (gpsStatus) gpsStatus.innerHTML = '<span class="dot" style="background:#ef4444"></span><span>GPS Ditolak — Fallback aktif</span>';
+                        if (gpsStatus) gpsStatus.innerHTML = '<span class="dot" style="background:#f04438"></span><span>GPS Ditolak — Fallback aktif</span>';
                     },
                     { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                 );
             } else {
-                gpsStatus.innerHTML = '<span class="dot" style="background:#ef4444"></span><span>Browser tidak mendukung GPS</span>';
+                gpsStatus.innerHTML = '<span class="dot" style="background:#f04438"></span><span>Browser tidak mendukung GPS</span>';
             }
         }
 
@@ -566,11 +631,14 @@
             }
         };
 
-        // Smooth scroll to results
-        {% if result %}
-        var banner = document.querySelector('.panel-header');
-        if (banner) setTimeout(function() { banner.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 400);
-        {% endif %}
+
+
+        // Smooth scroll to results if recommendations exist
+        const hasResults = document.querySelector('.recommendations') !== null;
+        if (hasResults) {
+            var banner = document.getElementById('analysis-section');
+            if (banner) setTimeout(function() { banner.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 400);
+        }
     });
     </script>
 
