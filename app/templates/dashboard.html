@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="AgroAI — Sistem Rekomendasi Cerdas Komoditas Pertanian Berbasis AI">
     <title>AgroAI — Analisis Lahan Cerdas</title>
-    <link rel="stylesheet" href="/static/css/style.css?v=4">
+    <link rel="stylesheet" href="/static/css/style.css?v=5">
     <link rel="icon" href="/static/img/logo.svg" type="image/svg+xml">
     <script src="https://unpkg.com/lucide@latest"></script>
     {% if not google_maps_api_key %}
@@ -613,8 +613,26 @@
         var sidebar = document.getElementById('sidebar');
         var overlay = document.getElementById('sidebar-overlay');
         if (toggle && sidebar && overlay) {
-            toggle.addEventListener('click', function() { sidebar.classList.toggle('open'); overlay.classList.toggle('active'); });
-            overlay.addEventListener('click', function() { sidebar.classList.remove('open'); overlay.classList.remove('active'); });
+            toggle.addEventListener('click', function() {
+                if (window.innerWidth > 768) {
+                    document.body.classList.toggle('sidebar-collapsed');
+                    // Recalculate map size if map exists
+                    setTimeout(function() {
+                        if (map && typeof map.invalidateSize === 'function') {
+                            map.invalidateSize();
+                        } else if (map && typeof google !== 'undefined' && google.maps && map instanceof google.maps.Map) {
+                            google.maps.event.trigger(map, 'resize');
+                        }
+                    }, 250);
+                } else {
+                    sidebar.classList.toggle('open');
+                    overlay.classList.toggle('active');
+                }
+            });
+            overlay.addEventListener('click', function() {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('active');
+            });
         }
 
         // Toggle detail expansion

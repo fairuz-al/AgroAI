@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="AgroAI — Riwayat Analisis Lahan">
     <title>AgroAI — Riwayat Analisis</title>
-    <link rel="stylesheet" href="/static/css/style.css?v=4">
+    <link rel="stylesheet" href="/static/css/style.css?v=5">
     <link rel="icon" href="/static/img/logo.svg" type="image/svg+xml">
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
@@ -133,8 +133,18 @@
         var sidebar = document.getElementById('sidebar');
         var overlay = document.getElementById('sidebar-overlay');
         if (toggle && sidebar && overlay) {
-            toggle.addEventListener('click', function() { sidebar.classList.toggle('open'); overlay.classList.toggle('active'); });
-            overlay.addEventListener('click', function() { sidebar.classList.remove('open'); overlay.classList.remove('active'); });
+            toggle.addEventListener('click', function() {
+                if (window.innerWidth > 768) {
+                    document.body.classList.toggle('sidebar-collapsed');
+                } else {
+                    sidebar.classList.toggle('open');
+                    overlay.classList.toggle('active');
+                }
+            });
+            overlay.addEventListener('click', function() {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('active');
+            });
         }
     });
     </script>

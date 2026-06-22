@@ -100,6 +100,11 @@ h4 {
   flex-direction: column;
   z-index: 100;
   padding: 1.5rem 0;
+  transition: transform var(--transition);
+}
+
+body.sidebar-collapsed .sidebar {
+  transform: translateX(-100%);
 }
 
 .sidebar-brand {
@@ -232,6 +237,11 @@ h4 {
   margin-left: var(--sidebar-width);
   min-height: 100vh;
   padding: 1.5rem 2rem;
+  transition: margin-left var(--transition);
+}
+
+body.sidebar-collapsed .main-content {
+  margin-left: 0;
 }
 
 /* Header */
@@ -957,24 +967,36 @@ h4 {
 }
 
 /* ============================================
-   Mobile Toggle
+   Sidebar Collapse Toggle Button
    ============================================ */
 .sidebar-toggle {
-  display: none;
+  display: flex;
   position: fixed;
-  top: .75rem;
-  left: .75rem;
+  top: 1rem;
+  left: 1.5rem;
   z-index: 200;
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   color: var(--text-primary);
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   cursor: pointer;
   align-items: center;
   justify-content: center;
+  box-shadow: var(--shadow-sm);
+  transition: left var(--transition), transform var(--transition);
+}
+
+.sidebar-toggle:hover {
+  background: var(--border-light);
+  color: var(--primary);
+}
+
+/* Position when sidebar is open */
+body:not(.sidebar-collapsed) .sidebar-toggle {
+  left: calc(var(--sidebar-width) + 1.5rem);
 }
 
 .sidebar-overlay {
@@ -1094,22 +1116,21 @@ h4 {
    ============================================ */
 .landing-hero {
   position: relative;
-  background: linear-gradient(140deg, var(--accent-navy), #060a1e 70%, #0d1e3d);
-  color: white;
+  background: linear-gradient(135deg, #f0fdf4 0%, #f5f7fa 50%, #eef2f6 100%);
+  color: var(--text-primary);
   padding: 5.5rem 2.5rem 11.5rem;
   text-align: center;
   margin: -1.5rem -2rem 2.5rem -2rem; /* Extend to bleed to edges of main content */
-  border-radius: 0 0 var(--radius-xl) var(--radius-xl); /* Rounded bottom edge only */
   overflow: hidden;
-  box-shadow: var(--shadow-md), 0 10px 30px -10px rgba(17, 30, 85, 0.2);
+  box-shadow: var(--shadow-md);
 }
 
 .landing-hero::before {
   content: '';
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(circle at 10% 20%, rgba(18, 183, 106, 0.1) 0%, transparent 40%),
-                    radial-gradient(circle at 90% 80%, rgba(122, 90, 248, 0.08) 0%, transparent 40%);
+  background-image: radial-gradient(circle at 10% 20%, rgba(18, 183, 106, 0.06) 0%, transparent 40%),
+                    radial-gradient(circle at 90% 80%, rgba(122, 90, 248, 0.05) 0%, transparent 40%);
   pointer-events: none;
 }
 
@@ -1122,28 +1143,53 @@ h4 {
 
 .hero-logo-wrapper {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
   margin-bottom: 1.5rem;
 }
 
 .hero-logo {
-  width: 120px;
-  height: 120px;
-  filter: drop-shadow(0 8px 16px rgba(18, 183, 106, 0.2));
+  width: 110px;
+  height: 110px;
+  filter: drop-shadow(0 8px 16px rgba(18, 183, 106, 0.15));
   animation: hero-float 6s ease-in-out infinite;
 }
 
+.hero-brand-text {
+  font-family: var(--font-sans);
+  font-size: 2.8rem;
+  font-weight: 800;
+  margin-top: 0.5rem;
+  letter-spacing: -2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.hero-brand-text .agro-text {
+  color: #000000;
+  font-weight: 800;
+  text-transform: lowercase;
+}
+
+.hero-brand-text .ai-text {
+  color: var(--primary);
+  font-weight: 300;
+  margin-left: 1px;
+}
+
 .landing-hero h1 {
-  font-size: 3.2rem;
-  font-weight: 900;
-  line-height: 1.15;
+  font-size: 2.8rem;
+  font-weight: 800;
+  line-height: 1.2;
   margin-bottom: 1rem;
-  letter-spacing: -1.5px;
-  color: #ffffff;
+  letter-spacing: -1.2px;
+  color: var(--text-primary);
 }
 
 .landing-hero h1 span.gradient-text {
-  background: linear-gradient(135deg, var(--primary), #52f396);
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary));
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -1151,9 +1197,9 @@ h4 {
 }
 
 .landing-hero p.hero-subtitle {
-  font-size: 1.15rem;
-  color: #c9d2eb;
-  max-width: 600px;
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  max-width: 620px;
   margin: 0 auto 2rem;
   line-height: 1.6;
   font-weight: 400;
@@ -1206,21 +1252,21 @@ h4 {
 /* Multi-colored field waves matching corporate palette + Sorell style */
 .wave-path.field-gold {
   fill: #F79009;
-  opacity: 0.15;
+  opacity: 0.07;
   animation-duration: 25s;
   animation-delay: -2s;
 }
 
 .wave-path.field-lavender {
   fill: #7A5AF8;
-  opacity: 0.12;
+  opacity: 0.06;
   animation-duration: 20s;
   animation-delay: -5s;
 }
 
 .wave-path.field-green-light {
   fill: var(--primary);
-  opacity: 0.22;
+  opacity: 0.12;
   animation-duration: 15s;
   animation-delay: -7s;
 }
