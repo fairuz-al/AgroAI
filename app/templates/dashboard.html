@@ -106,6 +106,12 @@
 
                             <!-- Map -->
                             <div class="gps-map-container">
+                                <div class="map-search-box">
+                                    <input type="text" id="map-search-input" placeholder="Cari lokasi lahan (cth: Sragen)...">
+                                    <button type="button" id="map-search-btn" aria-label="Cari Lokasi">
+                                        <i data-lucide="search" style="width: 16px; height: 16px;"></i>
+                                    </button>
+                                </div>
                                 <div id="gps-map" class="gps-map"></div>
                                 <!-- Fixed Red Center Pin Overlay -->
                                 <div class="map-center-pin">
@@ -598,6 +604,48 @@
         }
 
         if (refreshBtn) refreshBtn.addEventListener('click', function(e) { e.preventDefault(); detectGPS(); });
+
+        // Search Location Logic
+        var searchInput = document.getElementById('map-search-input');
+        var searchBtn = document.getElementById('map-search-btn');
+        function performSearch() {
+            if (!searchInput || !searchBtn) return;
+            var query = searchInput.value.trim();
+            if (!query) return;
+            
+            // Show loading
+            searchBtn.innerHTML = '<div class="spinner" style="display:block; width:14px; height:14px;"></div>';
+            
+            fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(query))
+                .then(r => r.json())
+                .then(data => {
+                    // Restore icon
+                    searchBtn.innerHTML = '<i data-lucide="search" style="width: 16px; height: 16px;"></i>';
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                    
+                    if (data && data.length > 0) {
+                        var lat = parseFloat(data[0].lat);
+                        var lon = parseFloat(data[0].lon);
+                        updateCoordinates(lat, lon, 'Pencarian');
+                    } else {
+                        alert('Lokasi tidak ditemukan. Coba kata kunci lain.');
+                    }
+                })
+                .catch(err => {
+                    searchBtn.innerHTML = '<i data-lucide="search" style="width: 16px; height: 16px;"></i>';
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                    alert('Gagal mencari lokasi. Periksa koneksi internet.');
+                });
+        }
+        if (searchBtn && searchInput) {
+            searchBtn.addEventListener('click', function(e) { e.preventDefault(); performSearch(); });
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    performSearch();
+                }
+            });
+        }
 
         // Animate score rings
         document.querySelectorAll('.rec-ring').forEach(function(ring) {
