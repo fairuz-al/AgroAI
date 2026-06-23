@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Float
 from pydantic import BaseModel
-from typing import List, Dict
+from typing import List, Dict, Optional
 from app.database import Base
 
 # ==========================================
@@ -56,9 +56,10 @@ class RecommendationRequest(BaseModel):
     latitude: float
     longitude: float
     land_area_ha: float
-    soil_type: str = None
-    elevation_mdpl: int = None
-    location: str = None
+    soil_type: Optional[str] = None
+    elevation_mdpl: Optional[int] = None
+    location: Optional[str] = None
+    force_local: bool = False
 
     class Config:
         json_schema_extra = {

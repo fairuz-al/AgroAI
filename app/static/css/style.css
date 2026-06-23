@@ -250,6 +250,7 @@ body.sidebar-collapsed .main-content {
   align-items: flex-start;
   justify-content: space-between;
   margin-bottom: 1.5rem;
+  padding-left: 3.5rem; /* Make space for sidebar toggle */
 }
 
 .page-header-left h1 {

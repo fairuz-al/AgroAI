@@ -159,6 +159,9 @@ if not os.path.exists(STATIC_DIR):
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 templates = Jinja2Templates(directory=TEMPLATE_DIR)
 
+# Global State for XAI Demo
+LATEST_XAI_DATA = None
+
 
 # ==========================================
 # 🌐 ROUTER 1: Web UI (Monolith Blueprint)
@@ -186,23 +189,43 @@ async def read_history(request: Request):
         }
     )
 
+@ui_router.get("/xai", response_class=HTMLResponse)
+async def read_xai(request: Request):
+    return templates.TemplateResponse(
+        request,
+        "xai.html",
+        {
+            "xai_data": LATEST_XAI_DATA
+        }
+    )
+
 @ui_router.post("/", response_class=HTMLResponse)
 async def handle_form_recommendation(
     request: Request,
     latitude: float = Form(...),
     longitude: float = Form(...),
     land_area_ha: float = Form(...),
+    force_local: bool = Form(False),
     db: Session = Depends(get_db)
 ):
     try:
         req_data = RecommendationRequest(
             latitude=latitude,
             longitude=longitude,
-            land_area_ha=land_area_ha
+            land_area_ha=land_area_ha,
+            force_local=force_local
         )
         
         # Panggil core AI Agent
         recommendations = await get_recommendation(req_data, db)
+        
+        # Save XAI data globally
+        if recommendations.get("xai_logs") or recommendations.get("xai_structured"):
+            global LATEST_XAI_DATA
+            LATEST_XAI_DATA = {
+                "logs": recommendations.get("xai_logs", []),
+                "structured": recommendations.get("xai_structured", {})
+            }
         
         return templates.TemplateResponse(
             request,
@@ -214,6 +237,7 @@ async def handle_form_recommendation(
                 "analysis_summary": recommendations.get("analysis_summary", ""),
                 "recommended_crops": recommendations.get("recommended_crops", []),
                 "fertilization_plan": recommendations.get("fertilization_plan"),
+                "xai_logs": recommendations.get("xai_logs", []),
                 "input_values": req_data,
                 "google_maps_api_key": os.getenv("GOOGLE_MAPS_API_KEY", "")
             }

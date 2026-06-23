@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgroAI — Log Algoritma (XAI)</title>
+    <link rel="stylesheet" href="/static/css/style.css?v=6">
+    <link rel="icon" href="/static/img/logo.svg" type="image/svg+xml">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .progress-bg { background: rgba(255,255,255,0.1); border-radius: 4px; height: 8px; width: 100%; overflow: hidden; margin-top: 4px; }
+        .progress-bar { background: var(--primary); height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+        .eval-card { background: var(--bg-card); border: 1px solid var(--border); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1rem; }
+        .eval-stat { display: flex; justify-content: space-between; font-size: 0.8rem; margin-top: 0.5rem; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <!-- ========== SIDEBAR ========== -->
+    <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">☰</button>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-icon">
+                <img src="/static/img/logo.svg" alt="AgroAI logo" style="width: 32px; height: 32px;">
+            </div>
+            <div class="brand-text">
+                <span class="brand-name">AgroAI</span>
+                <span class="brand-tag">FUZZY + FORWARD</span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="/" class="sidebar-nav-item">
+                <span class="nav-icon"><i data-lucide="layout-dashboard"></i></span>
+                Dashboard Analisis
+            </a>
+            <a href="/history" class="sidebar-nav-item">
+                <span class="nav-icon"><i data-lucide="history"></i></span>
+                History
+            </a>
+            <a href="/xai" class="sidebar-nav-item active">
+                <span class="nav-icon"><i data-lucide="terminal-square"></i></span>
+                Log Algoritma (XAI)
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <span class="status-dot"></span>
+            <span class="status-text">SISTEM AKTIF</span>
+        </div>
+    </aside>
+
+    <!-- ========== MAIN CONTENT ========== -->
+    <div class="main-content">
+        <div class="page-header">
+            <div class="page-header-left">
+                <h1>Log Algoritma (XAI)</h1>
+                <p>Tampilan transparansi model matematis Fuzzy Logic & Forward Chaining</p>
+            </div>
+        </div>
+
+        {% if xai_data and xai_data.structured %}
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
+            <!-- KIRI: VISUAL ANALYTICS -->
+            <div>
+                <!-- Panel Input Variables -->
+                <div class="panel" style="margin-bottom: 1.5rem;">
+                    <div class="panel-header dark" style="background: var(--text-primary); color: white;">
+                        <span><i data-lucide="database" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 0.5rem;"></i> VARIABEL INPUT (CRISP)</span>
+                    </div>
+                    <div class="panel-body" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; text-align: center;">
+                        {% for input in xai_data.structured.inputs %}
+                        <div style="background: var(--bg-input); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+                            <div style="font-size: 0.75rem; color: var(--text-tertiary); font-weight: 700; text-transform: uppercase;">{{ input.name }}</div>
+                            <div style="font-size: 1.1rem; color: var(--primary); font-weight: 700; margin-top: 0.25rem;">{{ input.value }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Panel Fuzzifikasi -->
+                <h3 style="font-size: 1rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 1rem;">Evaluasi Fuzzy per Komoditas</h3>
+                <div style="max-height: 500px; overflow-y: auto; padding-right: 0.5rem;">
+                    {% for eval in xai_data.structured.fuzzy_evaluations %}
+                    <div class="eval-card">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <h4 style="margin: 0; color: var(--text-primary); font-size: 1.1rem;">{{ eval.crop_name }}</h4>
+                            <span style="background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: 700; font-size: 0.85rem;">Skor Akhir: {{ eval.final_score }}</span>
+                        </div>
+                        
+                        <div class="eval-stat"><span>Kecocokan Tanah (µ)</span><span>{{ eval.soil_match }}</span></div>
+                        <div class="progress-bg"><div class="progress-bar" style="width: {{ eval.soil_match * 100 }}%"></div></div>
+                        
+                        <div class="eval-stat" style="margin-top: 0.75rem;"><span>Kecocokan Elevasi (µ)</span><span>{{ eval.elev_match }}</span></div>
+                        <div class="progress-bg"><div class="progress-bar" style="width: {{ eval.elev_match * 100 }}%; background: #f59e0b;"></div></div>
+                        
+                        <div class="eval-stat" style="margin-top: 0.75rem;"><span>Daya Tarik Harga (µ)</span><span>{{ eval.price_match }}</span></div>
+                        <div class="progress-bg"><div class="progress-bar" style="width: {{ eval.price_match * 100 }}%; background: #3b82f6;"></div></div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- KANAN: RAW TERMINAL -->
+            <div class="panel" style="height: 100%; display: flex; flex-direction: column;">
+                <div class="panel-header dark" style="background: #0f172a; color: white; display: flex; justify-content: space-between;">
+                    <span>RAW TRACE LOG</span>
+                    <i data-lucide="terminal" style="width: 16px; height: 16px;"></i>
+                </div>
+                <div class="panel-body" style="background: #1e293b; padding: 1rem; flex: 1; overflow-y: auto;">
+                    <pre style="color: #4ade80; font-family: var(--font-mono); font-size: 0.75rem; line-height: 1.6; margin: 0; white-space: pre-wrap;">{% for log in xai_data.logs %}
+{{ log }}{% endfor %}</pre>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="panel" style="margin-top: 2rem;">
+            <div class="panel-body" style="text-align: center; padding: 4rem 2rem;">
+                <i data-lucide="terminal-square" style="width: 48px; height: 48px; color: var(--text-tertiary); margin-bottom: 1rem;"></i>
+                <h2 style="color: var(--text-primary);">Belum Ada Data Log</h2>
+                <p style="color: var(--text-secondary); max-width: 500px; margin: 0 auto;">Silakan kembali ke Dashboard, centang <strong>"Gunakan Mode Pakar"</strong>, dan jalankan analisis lahan terlebih dahulu untuk melihat hasil perhitungan algoritma di halaman ini.</p>
+                <a href="/" class="btn btn-primary" style="margin-top: 1.5rem; display: inline-flex; text-decoration: none;">Kembali ke Dashboard</a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Lucide Icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+
+        // Sidebar toggle
+        var toggle = document.getElementById('sidebar-toggle');
+        var sidebar = document.getElementById('sidebar');
+        var overlay = document.getElementById('sidebar-overlay');
+        if (toggle && sidebar && overlay) {
+            toggle.addEventListener('click', function() {
+                if (window.innerWidth > 768) {
+                    document.body.classList.toggle('sidebar-collapsed');
+                } else {
+                    sidebar.classList.toggle('open');
+                    overlay.classList.toggle('active');
+                }
+            });
+            overlay.addEventListener('click', function() {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('active');
+            });
+        }
+    });
+    </script>
+</body>
+</html>

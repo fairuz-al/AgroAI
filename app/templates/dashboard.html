@@ -32,9 +32,13 @@
                 <span class="nav-icon"><i data-lucide="layout-dashboard"></i></span>
                 Dashboard Analisis
             </a>
-            <a href="/history" class="sidebar-nav-item">
+            <a href="/history" class="sidebar-nav-item ">
                 <span class="nav-icon"><i data-lucide="history"></i></span>
                 History
+            </a>
+            <a href="/xai" class="sidebar-nav-item ">
+                <span class="nav-icon"><i data-lucide="terminal-square"></i></span>
+                Log Algoritma (XAI)
             </a>
         </nav>
         <div class="sidebar-footer">
@@ -146,6 +150,12 @@
                             <button type="button" id="refresh-gps-btn" class="btn-gps-sync">
                                 Sinkronkan GPS Ulang
                             </button>
+
+                            <!-- Force Local Toggle -->
+                            <div class="force-local-toggle" style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; background: var(--bg-input); padding: 0.75rem; border-radius: var(--radius-sm); border: 1px dashed var(--primary);">
+                                <input type="checkbox" name="force_local" id="force_local" value="true" {% if input_values and input_values.force_local %}checked{% endif %} style="width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer;">
+                                <label for="force_local" style="font-size: 0.8rem; font-weight: 700; color: var(--primary); cursor: pointer; margin: 0;">Gunakan Mode Pakar (Fuzzy Logic Native)</label>
+                            </div>
 
                             <!-- Land Area -->
                             <div class="land-area-section">
@@ -296,6 +306,8 @@
                     </div>
                 </div>
                 {% endif %}
+
+                <!-- XAI Logs Panel Removed (Moved to /xai) -->
 
                 <!-- Recommendations -->
                 {% if recommended_crops %}
