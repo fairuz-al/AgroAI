@@ -211,7 +211,7 @@
             </div>
 
             <!-- ===== RIGHT COLUMN: Results ===== -->
-            <div class="right-column">
+            <div class="right-column" id="results-section">
 
                 {% if not result and not error_message %}
                 <!-- Empty State: AI Info Box -->
@@ -714,8 +714,8 @@
         // Smooth scroll to results if recommendations exist
         const hasResults = document.querySelector('.recommendations') !== null;
         if (hasResults) {
-            var banner = document.getElementById('analysis-section');
-            if (banner) setTimeout(function() { banner.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 400);
+            var resultsSection = document.getElementById('results-section');
+            if (resultsSection) setTimeout(function() { resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 400);
         }
     });
     </script>
