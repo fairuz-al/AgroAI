@@ -651,7 +651,7 @@ async def get_recommendation(req: RecommendationRequest, db: Session) -> dict:
     # AI PROVIDER 1: GROQ (Fast, Free Tier)
     # ==========================================
     groq_key = os.getenv("GROQ_API_KEY")
-    if groq_key:
+    if groq_key and not getattr(req, 'force_local', False):
         try:
             logger.info("Mengeksekusi rekomendasi via Groq API (Llama 3.3 70B)...")
             groq_client = GroqClient(api_key=groq_key)
@@ -681,7 +681,7 @@ async def get_recommendation(req: RecommendationRequest, db: Session) -> dict:
     # AI PROVIDER 2: GOOGLE GEMINI
     # ==========================================
     gemini_key = os.getenv("GEMINI_API_KEY")
-    if gemini_key:
+    if gemini_key and not getattr(req, 'force_local', False):
         try:
             logger.info("Mengeksekusi rekomendasi via Gemini API...")
             ai_client = genai.Client(api_key=gemini_key)
@@ -732,6 +732,44 @@ async def get_recommendation(req: RecommendationRequest, db: Session) -> dict:
         {"step": 1, "icon": "download", "title": "Input Collection", "description": f"Menerima input parameter lahan: {req.soil_type}, {req.elevation_mdpl} mdpl."},
         {"step": 2, "icon": "search", "title": "Data Pruning", "description": f"Menyaring kandidat komoditas berdasarkan kecocokan wilayah terdekat."}
     ] + rules_chain
+
+    xai_logs = []
+    xai_structured = {
+        "inputs": [
+            {"name": "Tanah", "value": req.soil_type},
+            {"name": "Elevasi", "value": f"{req.elevation_mdpl} mdpl"},
+            {"name": "Luas Lahan", "value": f"{req.land_area_ha} ha"}
+        ],
+        "fuzzy_evaluations": []
+    }
+    
+    xai_logs.append(f"=== XAI TRACE: FUZZY LOGIC & FORWARD CHAINING ===")
+    xai_logs.append(f"[INPUT] Tanah: {req.soil_type} | Elevasi: {req.elevation_mdpl} mdpl | Luas: {req.land_area_ha} ha")
+    
+    max_price = max(cr["price"] for cr in crops_data) if crops_data else 1
+    for crop in filtered_crops:
+        s_f = FuzzyMembership.soil_suitability(req.soil_type, crop["soil_type"])
+        e_f = FuzzyMembership.elevation_suitability(req.elevation_mdpl, crop["elevation_min"], crop["elevation_max"])
+        p_f = FuzzyMembership.price_attractiveness(crop["price"], max_price)
+        score = FuzzyInferenceEngine.evaluate_rules(s_f, e_f, p_f)
+        
+        xai_structured["fuzzy_evaluations"].append({
+            "crop_name": crop["name"],
+            "soil_match": round(s_f, 2),
+            "elev_match": round(e_f, 2),
+            "price_match": round(p_f, 2),
+            "final_score": round(score, 2)
+        })
+        
+        xai_logs.append(f"[FUZZY] Evaluasi Kandidat: {crop['name']}")
+        xai_logs.append(f"  -> µ(SoilSuitability) = {s_f:.2f}")
+        xai_logs.append(f"  -> µ(ElevationSuitability) = {e_f:.2f}")
+        xai_logs.append(f"  -> µ(PriceAttractiveness) = {p_f:.2f}")
+        xai_logs.append(f"  -> [INFERENCE ENGINE] Final Score = {score:.2f}")
+    
+    xai_logs.append("")
+    for rc in rules_chain:
+        xai_logs.append(f"[FORWARD_CHAINING] {rc['title']} => {rc['description']}")
 
     top_crops_fact = engine.get_fact_value("top_crops")
     cost_analysis = engine.get_fact_value("cost_analysis")
@@ -808,15 +846,16 @@ async def get_recommendation(req: RecommendationRequest, db: Session) -> dict:
         rec_text = f"Penggunaan kombinasi formula pupuk majemuk NPK Phonska bersubsidi jauh lebih ekonomis sekitar {savings_pct:.1f}% (Hemat {diff_str}) di pasaran."
 
     analysis_summary = f"Berdasarkan analisis Fuzzy Logic & Forward Chaining lokal, lahan dengan jenis tanah {req.soil_type} di elevasi {req.elevation_mdpl} mdpl paling direkomendasikan untuk menanam {recommendations[0]['name']}. Dari segi pembiayaan, skema {('pupuk tunggal' if diff > 0 else 'pupuk majemuk')} memberikan efisiensi tertinggi."
-
     return {
         "recommended_crops": recommendations,
-        "ai_mode": "local",
+        "ai_mode": "local (fuzzy_expert)",
         "reasoning_chain": reasoning_chain,
+        "xai_logs": xai_logs,
+        "xai_structured": xai_structured,
         "analysis_summary": analysis_summary,
         "fertilization_plan": {
-            "vegetative_phase": {"N": "90 kg/ha", "P": "45 kg/ha", "K": "30 kg/ha"},
-            "generative_phase": {"N": "45 kg/ha", "P": "20 kg/ha", "K": "60 kg/ha"},
+            "vegetative_phase": {"N": f"{qty_urea * 0.46 / req.land_area_ha:.1f} kg/ha", "P": f"{qty_sp36 * 0.36 / req.land_area_ha:.1f} kg/ha", "K": f"{qty_kcl * 0.60 / req.land_area_ha:.1f} kg/ha"},
+            "generative_phase": {"N": "45.0 kg/ha", "P": "20.0 kg/ha", "K": "60.0 kg/ha"},
             "cost_comparison": {
                 "npk_compound": {
                     "total_cost": round(cost_npk, 2),
