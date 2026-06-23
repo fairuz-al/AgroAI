@@ -151,12 +151,6 @@
                                 Sinkronkan GPS Ulang
                             </button>
 
-                            <!-- Force Local Toggle -->
-                            <div class="force-local-toggle" style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; background: var(--bg-input); padding: 0.75rem; border-radius: var(--radius-sm); border: 1px dashed var(--primary);">
-                                <input type="checkbox" name="force_local" id="force_local" value="true" {% if input_values and input_values.force_local %}checked{% endif %} style="width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer;">
-                                <label for="force_local" style="font-size: 0.8rem; font-weight: 700; color: var(--primary); cursor: pointer; margin: 0;">Gunakan Mode Pakar (Fuzzy Logic Native)</label>
-                            </div>
-
                             <!-- Land Area -->
                             <div class="land-area-section">
                                 <label for="land_area_ha">LUAS LAHAN (HEKTAR)</label>
@@ -211,7 +205,7 @@
             </div>
 
             <!-- ===== RIGHT COLUMN: Results ===== -->
-            <div class="right-column">
+            <div class="right-column" id="results-section">
 
                 {% if not result and not error_message %}
                 <!-- Empty State: AI Info Box -->
@@ -714,8 +708,8 @@
         // Smooth scroll to results if recommendations exist
         const hasResults = document.querySelector('.recommendations') !== null;
         if (hasResults) {
-            var banner = document.getElementById('analysis-section');
-            if (banner) setTimeout(function() { banner.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 400);
+            var resultsSection = document.getElementById('results-section');
+            if (resultsSection) setTimeout(function() { resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 400);
         }
     });
     </script>
