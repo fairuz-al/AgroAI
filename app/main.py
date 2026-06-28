@@ -169,33 +169,94 @@ LATEST_XAI_DATA = None
 ui_router = APIRouter(tags=["Web User Interface"])
 
 @ui_router.get("/", response_class=HTMLResponse)
-async def read_root(request: Request):
+async def read_root(
+    request: Request,
+    latitude: float = None,
+    longitude: float = None,
+    land_area_ha: float = None,
+    force_local: bool = False
+):
+    input_values = None
+    if latitude is not None and longitude is not None and land_area_ha is not None:
+        input_values = RecommendationRequest(
+            latitude=latitude,
+            longitude=longitude,
+            land_area_ha=land_area_ha,
+            force_local=force_local
+        )
     return templates.TemplateResponse(
         request, 
         "dashboard.html", 
         {
             "result": None,
+            "input_values": input_values,
             "google_maps_api_key": os.getenv("GOOGLE_MAPS_API_KEY", "")
         }
     )
 
 @ui_router.get("/history", response_class=HTMLResponse)
-async def read_history(request: Request):
+async def read_history(request: Request, db: Session = Depends(get_db)):
+    histories = db.query(AnalysisHistory).order_by(AnalysisHistory.id.desc()).all()
+    parsed_histories = []
+    for item in histories:
+        try:
+            res_dict = json.loads(item.result_json)
+        except Exception:
+            res_dict = {}
+        parsed_histories.append({
+            "id": item.id,
+            "created_at": item.created_at,
+            "latitude": item.latitude,
+            "longitude": item.longitude,
+            "land_area_ha": item.land_area_ha,
+            "location": item.location,
+            "soil_type": item.soil_type,
+            "elevation_mdpl": item.elevation_mdpl,
+            "best_crop": item.best_crop,
+            "result": res_dict
+        })
     return templates.TemplateResponse(
         request,
         "history.html",
         {
+            "histories": parsed_histories,
             "google_maps_api_key": os.getenv("GOOGLE_MAPS_API_KEY", "")
         }
     )
 
+@ui_router.post("/history/delete/{history_id}")
+async def delete_history(history_id: int, db: Session = Depends(get_db)):
+    from fastapi.responses import RedirectResponse
+    history_item = db.query(AnalysisHistory).filter(AnalysisHistory.id == history_id).first()
+    if history_item:
+        db.delete(history_item)
+        db.commit()
+    return RedirectResponse(url="/history", status_code=303)
+
 @ui_router.get("/xai", response_class=HTMLResponse)
-async def read_xai(request: Request):
+async def read_xai(request: Request, history_id: int = None, db: Session = Depends(get_db)):
+    xai_data = None
+    if history_id is not None:
+        history_item = db.query(AnalysisHistory).filter(AnalysisHistory.id == history_id).first()
+        if history_item:
+            try:
+                res_dict = json.loads(history_item.result_json)
+                if res_dict.get("xai_logs") or res_dict.get("xai_structured"):
+                    xai_data = {
+                        "logs": res_dict.get("xai_logs", []),
+                        "structured": res_dict.get("xai_structured", {})
+                    }
+            except Exception:
+                pass
+    
+    if xai_data is None:
+        xai_data = LATEST_XAI_DATA
+
     return templates.TemplateResponse(
         request,
         "xai.html",
         {
-            "xai_data": LATEST_XAI_DATA
+            "xai_data": xai_data
         }
     )
 
@@ -226,6 +287,29 @@ async def handle_form_recommendation(
                 "logs": recommendations.get("xai_logs", []),
                 "structured": recommendations.get("xai_structured", {})
             }
+        
+        # Simpan ke riwayat analisis (Database)
+        try:
+            best_crop_name = "Tidak Ada"
+            if recommendations.get("recommended_crops"):
+                best_crop_name = recommendations["recommended_crops"][0].get("name", "Tidak Ada")
+            
+            history_entry = AnalysisHistory(
+                created_at=datetime.now().strftime("%Y-%m-%d %H:%M"),
+                latitude=latitude,
+                longitude=longitude,
+                land_area_ha=land_area_ha,
+                location=req_data.location or "Tidak diketahui",
+                soil_type=req_data.soil_type or "Tidak diketahui",
+                elevation_mdpl=req_data.elevation_mdpl or 0,
+                best_crop=best_crop_name,
+                result_json=json.dumps(recommendations)
+            )
+            db.add(history_entry)
+            db.commit()
+        except Exception as db_err:
+            logger.error(f"Gagal menyimpan riwayat analisis ke database: {db_err}")
+            db.rollback()
         
         return templates.TemplateResponse(
             request,
@@ -264,6 +348,30 @@ api_router = APIRouter(prefix="/api/v1", tags=["REST API Endpoints"])
 async def get_agro_recommendation_api(req: RecommendationRequest, db: Session = Depends(get_db)):
     try:
         recommendations = await get_recommendation(req, db)
+        
+        # Simpan ke riwayat analisis (Database)
+        try:
+            best_crop_name = "Tidak Ada"
+            if recommendations.get("recommended_crops"):
+                best_crop_name = recommendations["recommended_crops"][0].get("name", "Tidak Ada")
+            
+            history_entry = AnalysisHistory(
+                created_at=datetime.now().strftime("%Y-%m-%d %H:%M"),
+                latitude=req.latitude,
+                longitude=req.longitude,
+                land_area_ha=req.land_area_ha,
+                location=req.location or "Tidak diketahui",
+                soil_type=req.soil_type or "Tidak diketahui",
+                elevation_mdpl=req.elevation_mdpl or 0,
+                best_crop=best_crop_name,
+                result_json=json.dumps(recommendations)
+            )
+            db.add(history_entry)
+            db.commit()
+        except Exception as db_err:
+            logger.error(f"Gagal menyimpan riwayat analisis API ke database: {db_err}")
+            db.rollback()
+            
         return recommendations
     except Exception as e:
         logger.error(f"API Recommendation Error: {str(e)}")
