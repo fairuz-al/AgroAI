@@ -58,60 +58,209 @@
             </div>
         </div>
 
-        <!-- History Main Card -->
+        <!-- History List -->
+        {% if not histories %}
         <div class="panel">
-            <div class="panel-header" style="background: linear-gradient(135deg, var(--accent-orange), #b25e02); color: white; border-bottom: 1px solid var(--border);">
-                Fase Migrasi Database
-            </div>
-            <div class="panel-body" style="text-align: center; padding: 3rem 2rem;">
-                <div style="color: var(--accent-orange); margin-bottom: 1rem;">
-                    <i data-lucide="database" style="width: 48px; height: 48px;"></i>
+            <div class="panel-body" style="text-align: center; padding: 4rem 2rem;">
+                <div style="color: var(--text-tertiary); margin-bottom: 1.5rem;">
+                    <i data-lucide="history" style="width: 64px; height: 64px; opacity: 0.5;"></i>
                 </div>
-                <h2 style="font-size: 1.5rem; color: var(--text-primary); margin-bottom: 0.75rem;">Integrasi Database Sedang Berjalan</h2>
-                <p style="color: var(--text-secondary); max-width: 500px; margin: 0 auto 1.5rem; font-size: 0.95rem; line-height: 1.6;">
-                    Fitur penyimpanan riwayat analisis lahan saat ini dalam status <strong>Ongoing</strong>. Kami sedang mempersiapkan migrasi database untuk mendukung penyimpanan data secara persisten dan aman.
+                <h2 style="font-size: 1.5rem; color: var(--text-primary); margin-bottom: 0.75rem;">Belum Ada Riwayat Analisis</h2>
+                <p style="color: var(--text-secondary); max-width: 500px; margin: 0 auto 2rem; font-size: 0.95rem; line-height: 1.6;">
+                    Anda belum melakukan analisis karakteristik lahan. Mulailah dengan memasukkan koordinat lahan Anda di Dashboard.
                 </p>
-                <div style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: rgba(247, 144, 9, 0.08); border: 1px solid rgba(247, 144, 9, 0.2); border-radius: var(--radius-md); font-size: 0.82rem; color: #d97706; font-weight: 600;">
-                    Status: Menunggu Migrasi Tabel `analysis_history`
-                </div>
+                <a href="/" class="btn-primary" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none; max-width: 250px; margin: 0 auto;">
+                    Mulai Analisis Lahan <i data-lucide="arrow-right" style="margin-left: 0.5rem; width: 16px; height: 16px;"></i>
+                </a>
             </div>
         </div>
+        {% else %}
+        <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem;">
+            {% for item in histories %}
+            <div class="panel history-card-wrapper" id="history-card-{{ item.id }}">
+                <div class="panel-header" style="background: var(--bg-input); border-bottom: 1px solid var(--border); color: var(--text-primary); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span class="badge {{ 'green' if loop.first else 'dark' }}" style="font-size: 0.7rem; padding: 0.25rem 0.5rem;">
+                            {{ "ANALISIS TERBARU" if loop.first else "#" ~ (histories|length - loop.index + 1) }}
+                        </span>
+                        <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.3rem;">
+                            <i data-lucide="calendar" style="width: 14px; height: 14px;"></i> {{ item.created_at }}
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <a href="/?latitude={{ item.latitude }}&longitude={{ item.longitude }}&land_area_ha={{ item.land_area_ha }}" class="btn-gps-sync" style="font-size: 0.75rem; padding: 0.35rem 0.75rem; display: inline-flex; align-items: center; gap: 0.3rem; border: 1px solid var(--primary-border); background: var(--primary-bg); color: var(--primary); text-decoration: none; border-radius: var(--radius-sm); font-weight: 600;">
+                            <i data-lucide="external-link" style="width: 12px; height: 12px;"></i> Muat ke Dashboard
+                        </a>
+                        
+                        <form action="/history/delete/{{ item.id }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus riwayat analisis ini?');" style="margin: 0;">
+                            <button type="submit" class="btn-gps-sync" style="font-size: 0.75rem; padding: 0.35rem 0.75rem; display: inline-flex; align-items: center; gap: 0.3rem; border: 1px solid rgba(240,68,56,0.2); background: rgba(240,68,56,0.05); color: var(--accent-red); cursor: pointer; border-radius: var(--radius-sm); font-weight: 600;">
+                                <i data-lucide="trash-2" style="width: 12px; height: 12px;"></i> Hapus
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div class="panel-body" style="padding: 1.25rem;">
+                    <!-- Overview Grid -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.25rem;">
+                        <div>
+                            <div style="font-size: 0.7rem; color: var(--text-tertiary); text-transform: uppercase; font-weight: 600;">Wilayah & GPS</div>
+                            <h4 style="font-size: 0.95rem; color: var(--text-primary); margin: 0.2rem 0; font-weight: 700;">{{ item.location }}</h4>
+                            <p style="font-size: 0.8rem; color: var(--text-secondary); font-family: var(--font-mono); margin: 0;">{{ item.latitude }}, {{ item.longitude }}</p>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.7rem; color: var(--text-tertiary); text-transform: uppercase; font-weight: 600;">Spesifikasi Lahan</div>
+                            <h4 style="font-size: 0.95rem; color: var(--text-primary); margin: 0.2rem 0; font-weight: 700;">Tanah {{ item.soil_type }}</h4>
+                            <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 0;">Elevasi: {{ item.elevation_mdpl }} mdpl · Luas: {{ item.land_area_ha }} ha</p>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.7rem; color: var(--text-tertiary); text-transform: uppercase; font-weight: 600;">Rekomendasi Utama</div>
+                            <h4 style="font-size: 0.95rem; color: var(--primary); margin: 0.2rem 0; font-weight: 700; display: flex; align-items: center; gap: 0.3rem;">
+                                <i data-lucide="award" style="width: 16px; height: 16px; color: var(--primary);"></i> {{ item.best_crop }}
+                            </h4>
+                            {% if item.result.recommended_crops %}
+                            <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 0;">
+                                Estimasi Profit: 
+                                <strong style="color: var(--text-primary); font-family: var(--font-mono);">
+                                    {% if item.result.recommended_crops[0].profit_single >= item.result.recommended_crops[0].profit_npk %}
+                                        {{ item.result.recommended_crops[0].profit_single_str }}
+                                    {% else %}
+                                        {{ item.result.recommended_crops[0].profit_npk_str }}
+                                    {% endif %}
+                                </strong>
+                            </p>
+                            {% endif %}
+                        </div>
+                    </div>
 
-        <!-- Visual locked state placeholder cards to show modern design -->
-        <div style="margin-top: 2rem;">
-            <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 1rem;">Pratinjau Tampilan Mendatang</h3>
-            
-            <div style="display: grid; grid-template-columns: 1fr; gap: 1rem; opacity: 0.4; pointer-events: none; user-select: none;">
-                <!-- Card Placeholder 1 -->
-                <div class="panel" style="border-style: dashed;">
-                    <div class="panel-body" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem;">
-                        <div>
-                            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-tertiary);">2026-06-17 14:00</div>
-                            <h4 style="font-size: 0.95rem; color: var(--text-primary); margin: 0.2rem 0;">Tanah Aluvial, 150 mdpl (Semarang)</h4>
-                            <p style="font-size: 0.8rem; color: var(--text-secondary);">Rekomendasi Utama: Padi IR64 (Kecocokan 95%)</p>
-                        </div>
-                        <div style="text-align: right;">
-                            <div style="font-size: 0.85rem; font-weight: 700; color: var(--primary);">Rp 25.400.000 / ha</div>
-                            <span style="font-size: 0.7rem; color: var(--text-tertiary);">Estimasi Profit</span>
-                        </div>
+                    <!-- Toggle Detail Button -->
+                    <div style="border-top: 1px solid var(--border); padding-top: 1rem; display: flex; justify-content: flex-end;">
+                        <button class="btn-gps-sync" style="background: var(--bg-input); color: var(--text-primary); display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer;" onclick="toggleHistoryDetail(this)">
+                            Lihat Rincian <i data-lucide="chevron-down" style="width: 16px; height: 16px;"></i>
+                        </button>
                     </div>
-                </div>
-                <!-- Card Placeholder 2 -->
-                <div class="panel" style="border-style: dashed;">
-                    <div class="panel-body" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem;">
-                        <div>
-                            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-tertiary);">2026-06-16 10:30</div>
-                            <h4 style="font-size: 0.95rem; color: var(--text-primary); margin: 0.2rem 0;">Tanah Andosol, 1200 mdpl (Temanggung)</h4>
-                            <p style="font-size: 0.8rem; color: var(--text-secondary);">Rekomendasi Utama: Kentang Granola (Kecocokan 90%)</p>
-                        </div>
-                        <div style="text-align: right;">
-                            <div style="font-size: 0.85rem; font-weight: 700; color: var(--primary);">Rp 45.100.000 / ha</div>
-                            <span style="font-size: 0.7rem; color: var(--text-tertiary);">Estimasi Profit</span>
-                        </div>
+
+                    <!-- Collapsible Details Container -->
+                    <div class="history-detail" style="display: none; border-top: 1px dashed var(--border); margin-top: 1rem; padding-top: 1.25rem;">
+                        {% if item.result %}
+                            
+                            <!-- Summary -->
+                            {% if item.result.analysis_summary %}
+                            <div class="ai-info-box" style="margin-bottom: 1.25rem;">
+                                <div class="info-text" style="font-size: 0.85rem; line-height: 1.5;">{{ item.result.analysis_summary }}</div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Recommendations List -->
+                            {% if item.result.recommended_crops %}
+                            <h4 style="font-size: 0.85rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 0.4rem;">
+                                <i data-lucide="list" style="width: 16px; height: 16px; color: var(--primary);"></i> Daftar Rekomendasi Tanaman & Estimasi Profit
+                            </h4>
+                            <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem;">
+                                {% for crop in item.result.recommended_crops %}
+                                <div style="background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1rem;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-tertiary);">#{{ loop.index }}</span>
+                                            <h5 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin: 0;">{{ crop.name }}</h5>
+                                            <span style="font-size: 0.7rem; font-weight: 700; padding: 0.15rem 0.4rem; border-radius: 20px; background: rgba(16, 185, 129, 0.1); color: #10b981;">
+                                                Kecocokan: {{ (crop.suitability_score * 100) | int }}%
+                                            </span>
+                                        </div>
+                                        <div style="font-size: 0.85rem; font-weight: 700; color: var(--primary); font-family: var(--font-mono);">
+                                            {{ crop.estimated_price_per_kg_str }}/kg
+                                        </div>
+                                    </div>
+                                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 0 0 0.75rem 0; line-height: 1.4;">{{ crop.reasoning }}</p>
+                                    
+                                    <!-- Finance Grid -->
+                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem;">
+                                        <div style="padding: 0.5rem; background: var(--primary-bg); border: 1px solid var(--primary-border); border-radius: var(--radius-sm);">
+                                            <span style="font-size: 0.6rem; color: var(--text-tertiary); text-transform: uppercase; display: block; font-weight: 600;">Pendapatan Panen</span>
+                                            <span style="font-size: 0.85rem; font-weight: 700; color: var(--primary); font-family: var(--font-mono);">{{ crop.harvest_revenue_str }}</span>
+                                        </div>
+                                        <div style="padding: 0.5rem; background: rgba(240,68,56,0.05); border: 1px solid rgba(240,68,56,0.15); border-radius: var(--radius-sm);">
+                                            <span style="font-size: 0.6rem; color: var(--text-tertiary); text-transform: uppercase; display: block; font-weight: 600;">Biaya Bibit</span>
+                                            <span style="font-size: 0.85rem; font-weight: 700; color: var(--accent-red); font-family: var(--font-mono);">{{ crop.seed_cost_total_str }}</span>
+                                        </div>
+                                        <div style="padding: 0.5rem; background: var(--bg-card); border-left: 3px solid var(--primary); border-radius: var(--radius-sm);">
+                                            <span style="font-size: 0.6rem; color: var(--text-tertiary); text-transform: uppercase; display: block; font-weight: 600;">Profit (Pupuk Tunggal)</span>
+                                            <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); font-family: var(--font-mono);">{{ crop.profit_single_str }}</span>
+                                        </div>
+                                        <div style="padding: 0.5rem; background: var(--bg-card); border-left: 3px solid var(--accent-blue); border-radius: var(--radius-sm);">
+                                            <span style="font-size: 0.6rem; color: var(--text-tertiary); text-transform: uppercase; display: block; font-weight: 600;">Profit (NPK Majemuk)</span>
+                                            <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); font-family: var(--font-mono);">{{ crop.profit_npk_str }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+
+                            <!-- Fertilization Plan -->
+                            {% if item.result.fertilization_plan %}
+                            <h4 style="font-size: 0.85rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 0.4rem;">
+                                <i data-lucide="sprout" style="width: 16px; height: 16px; color: #10b981;"></i> Rencana Pemupukan Lahan ({{ item.land_area_ha }} ha)
+                            </h4>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.25rem;">
+                                <div style="background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1rem;">
+                                    <h5 style="font-size: 0.85rem; font-weight: 700; color: var(--primary); margin: 0 0 0.5rem 0;">Fase Vegetatif</h5>
+                                    <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+                                        {% set veg = item.result.fertilization_plan.vegetative_phase %}
+                                        <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
+                                            <span style="color: #10b981; font-weight: 700;">N (Nitrogen)</span>
+                                            <span style="color: var(--text-secondary);">{{ veg.N }}</span>
+                                        </div>
+                                        <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
+                                            <span style="color: #3b82f6; font-weight: 700;">P (Fosfor)</span>
+                                            <span style="color: var(--text-secondary);">{{ veg.P }}</span>
+                                        </div>
+                                        <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
+                                            <span style="color: #f59e0b; font-weight: 700;">K (Kalium)</span>
+                                            <span style="color: var(--text-secondary);">{{ veg.K }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1rem;">
+                                    <h5 style="font-size: 0.85rem; font-weight: 700; color: var(--accent-orange); margin: 0 0 0.5rem 0;">Fase Generatif</h5>
+                                    <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+                                        {% set gen = item.result.fertilization_plan.generative_phase %}
+                                        <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
+                                            <span style="color: #10b981; font-weight: 700;">N (Nitrogen)</span>
+                                            <span style="color: var(--text-secondary);">{{ gen.N }}</span>
+                                        </div>
+                                        <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
+                                            <span style="color: #3b82f6; font-weight: 700;">P (Fosfor)</span>
+                                            <span style="color: var(--text-secondary);">{{ gen.P }}</span>
+                                        </div>
+                                        <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
+                                            <span style="color: #f59e0b; font-weight: 700;">K (Kalium)</span>
+                                            <span style="color: var(--text-secondary);">{{ gen.K }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Cost comparison recommendation -->
+                            {% if item.result.fertilization_plan.cost_comparison %}
+                            <div style="background: rgba(16, 185, 129, 0.03); border: 1px solid rgba(16, 185, 129, 0.15); padding: 1rem; border-radius: var(--radius-md); font-size: 0.85rem; line-height: 1.5; color: var(--text-primary); display: flex; align-items: flex-start; gap: 0.5rem;">
+                                <i data-lucide="info" style="width: 18px; height: 18px; color: #10b981; flex-shrink: 0; margin-top: 0.1rem;"></i>
+                                <span>{{ item.result.fertilization_plan.cost_comparison.recommendation }}</span>
+                            </div>
+                            {% endif %}
+                            
+                            {% endif %}
+
+                        {% else %}
+                            <p style="font-size: 0.85rem; color: var(--text-secondary); font-style: italic; margin: 0;">Detail hasil analisis tidak tersedia.</p>
+                        {% endif %}
                     </div>
+
                 </div>
             </div>
+            {% endfor %}
         </div>
+        {% endif %}
 
         <!-- Footer -->
         <div class="footer">
@@ -131,6 +280,22 @@
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
         }
+
+        // Toggle history card detail collapsible
+        window.toggleHistoryDetail = function(btn) {
+            var card = btn.closest('.history-card-wrapper');
+            var detail = card.querySelector('.history-detail');
+            if (detail.style.display === 'none' || !detail.style.display) {
+                detail.style.display = 'block';
+                btn.innerHTML = 'Tutup Rincian <i data-lucide="chevron-up" style="width: 16px; height: 16px;"></i>';
+            } else {
+                detail.style.display = 'none';
+                btn.innerHTML = 'Lihat Rincian <i data-lucide="chevron-down" style="width: 16px; height: 16px;"></i>';
+            }
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        };
 
         // Sidebar toggle
         var toggle = document.getElementById('sidebar-toggle');
