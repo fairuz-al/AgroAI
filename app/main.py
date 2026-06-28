@@ -234,12 +234,29 @@ async def delete_history(history_id: int, db: Session = Depends(get_db)):
     return RedirectResponse(url="/history", status_code=303)
 
 @ui_router.get("/xai", response_class=HTMLResponse)
-async def read_xai(request: Request):
+async def read_xai(request: Request, history_id: int = None, db: Session = Depends(get_db)):
+    xai_data = None
+    if history_id is not None:
+        history_item = db.query(AnalysisHistory).filter(AnalysisHistory.id == history_id).first()
+        if history_item:
+            try:
+                res_dict = json.loads(history_item.result_json)
+                if res_dict.get("xai_logs") or res_dict.get("xai_structured"):
+                    xai_data = {
+                        "logs": res_dict.get("xai_logs", []),
+                        "structured": res_dict.get("xai_structured", {})
+                    }
+            except Exception:
+                pass
+    
+    if xai_data is None:
+        xai_data = LATEST_XAI_DATA
+
     return templates.TemplateResponse(
         request,
         "xai.html",
         {
-            "xai_data": LATEST_XAI_DATA
+            "xai_data": xai_data
         }
     )
 
