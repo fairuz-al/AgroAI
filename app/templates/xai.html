@@ -15,8 +15,19 @@
     </style>
 </head>
 <body>
+    <!-- ========== MOBILE HEADER ========== -->
+    <div class="mobile-header-bar">
+        <div class="mobile-brand">
+            <img src="/static/img/logo.svg" alt="AgroAI logo">
+            <span>AgroAI</span>
+        </div>
+        <button class="mobile-sidebar-toggle sidebar-toggle-btn" aria-label="Toggle sidebar">
+            <i data-lucide="menu"></i>
+        </button>
+    </div>
+
     <!-- ========== SIDEBAR ========== -->
-    <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">☰</button>
+    <button class="sidebar-toggle sidebar-toggle-btn" id="sidebar-toggle" aria-label="Toggle sidebar">☰</button>
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-brand">
@@ -58,7 +69,7 @@
         </div>
 
         {% if xai_data and xai_data.structured %}
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
+        <div class="xai-grid">
             <!-- KIRI: VISUAL ANALYTICS -->
             <div>
                 <!-- Panel Input Variables -->
@@ -66,13 +77,15 @@
                     <div class="panel-header dark" style="background: var(--text-primary); color: white;">
                         <span><i data-lucide="database" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 0.5rem;"></i> VARIABEL INPUT (CRISP)</span>
                     </div>
-                    <div class="panel-body" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; text-align: center;">
-                        {% for input in xai_data.structured.inputs %}
-                        <div style="background: var(--bg-input); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
-                            <div style="font-size: 0.75rem; color: var(--text-tertiary); font-weight: 700; text-transform: uppercase;">{{ input.name }}</div>
-                            <div style="font-size: 1.1rem; color: var(--primary); font-weight: 700; margin-top: 0.25rem;">{{ input.value }}</div>
+                    <div class="panel-body">
+                        <div class="xai-inputs-grid">
+                            {% for input in xai_data.structured.inputs %}
+                            <div style="background: var(--bg-input); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+                                <div style="font-size: 0.75rem; color: var(--text-tertiary); font-weight: 700; text-transform: uppercase;">{{ input.name }}</div>
+                                <div style="font-size: 1.1rem; color: var(--primary); font-weight: 700; margin-top: 0.25rem;">{{ input.value }}</div>
+                            </div>
+                            {% endfor %}
                         </div>
-                        {% endfor %}
                     </div>
                 </div>
 
@@ -131,17 +144,19 @@
         }
 
         // Sidebar toggle
-        var toggle = document.getElementById('sidebar-toggle');
+        var toggles = document.querySelectorAll('.sidebar-toggle-btn');
         var sidebar = document.getElementById('sidebar');
         var overlay = document.getElementById('sidebar-overlay');
-        if (toggle && sidebar && overlay) {
-            toggle.addEventListener('click', function() {
-                if (window.innerWidth > 768) {
-                    document.body.classList.toggle('sidebar-collapsed');
-                } else {
-                    sidebar.classList.toggle('open');
-                    overlay.classList.toggle('active');
-                }
+        if (sidebar && overlay) {
+            toggles.forEach(function(toggle) {
+                toggle.addEventListener('click', function() {
+                    if (window.innerWidth > 768) {
+                        document.body.classList.toggle('sidebar-collapsed');
+                    } else {
+                        sidebar.classList.toggle('open');
+                        overlay.classList.toggle('active');
+                    }
+                });
             });
             overlay.addEventListener('click', function() {
                 sidebar.classList.remove('open');
