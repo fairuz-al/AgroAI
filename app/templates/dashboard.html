@@ -14,8 +14,19 @@
 </head>
 <body>
 
+    <!-- ========== MOBILE HEADER ========== -->
+    <div class="mobile-header-bar">
+        <div class="mobile-brand">
+            <img src="/static/img/logo.svg" alt="AgroAI logo">
+            <span>AgroAI</span>
+        </div>
+        <button class="mobile-sidebar-toggle sidebar-toggle-btn" aria-label="Toggle sidebar">
+            <i data-lucide="menu"></i>
+        </button>
+    </div>
+
     <!-- ========== SIDEBAR ========== -->
-    <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">☰</button>
+    <button class="sidebar-toggle sidebar-toggle-btn" id="sidebar-toggle" aria-label="Toggle sidebar">☰</button>
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-brand">
@@ -347,7 +358,7 @@
                                     <i data-lucide="wallet" style="width: 16px; height: 16px; color: var(--primary);"></i> Estimasi Finansial — {{ crop.name }}
                                 </h4>
                                 
-                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:.75rem; margin-bottom:.75rem;">
+                                <div class="financial-grid">
                                     <div style="padding:.6rem; background:var(--primary-bg); border-radius:var(--radius-sm); border:1px solid var(--primary-border);">
                                         <div style="font-size:.65rem; color:var(--text-tertiary); text-transform:uppercase; font-weight:600;">Pendapatan Panen</div>
                                         <div style="font-size:.95rem; font-weight:700; color:var(--primary); font-family:var(--font-mono);">{{ crop.harvest_revenue_str }}</div>
@@ -360,7 +371,7 @@
                                     </div>
                                 </div>
 
-                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:.75rem; margin-bottom:.75rem;">
+                                <div class="financial-grid">
                                     <div style="padding:.6rem; background:var(--bg-input); border-radius:var(--radius-sm); border-left:3px solid var(--primary);">
                                         <div style="font-size:.65rem; color:var(--text-tertiary); text-transform:uppercase; font-weight:600; display:flex; align-items:center; gap:0.3rem;">
                                             <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--primary);"></span> Pupuk Tunggal
@@ -396,7 +407,7 @@
                 <div class="panel">
                     <div class="panel-header green">RENCANA PEMUPUKAN</div>
                     <div class="panel-body">
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="fertilizer-phases-grid">
                             <!-- Vegetative -->
                             <div>
                                 <h4 style="font-size: .85rem; margin-bottom: .75rem; color: var(--primary);">Fase Vegetatif</h4>
@@ -669,25 +680,27 @@
         });
 
         // Sidebar toggle
-        var toggle = document.getElementById('sidebar-toggle');
+        var toggles = document.querySelectorAll('.sidebar-toggle-btn');
         var sidebar = document.getElementById('sidebar');
         var overlay = document.getElementById('sidebar-overlay');
-        if (toggle && sidebar && overlay) {
-            toggle.addEventListener('click', function() {
-                if (window.innerWidth > 768) {
-                    document.body.classList.toggle('sidebar-collapsed');
-                    // Recalculate map size if map exists
-                    setTimeout(function() {
-                        if (map && typeof map.invalidateSize === 'function') {
-                            map.invalidateSize();
-                        } else if (map && typeof google !== 'undefined' && google.maps && map instanceof google.maps.Map) {
-                            google.maps.event.trigger(map, 'resize');
-                        }
-                    }, 250);
-                } else {
-                    sidebar.classList.toggle('open');
-                    overlay.classList.toggle('active');
-                }
+        if (sidebar && overlay) {
+            toggles.forEach(function(toggle) {
+                toggle.addEventListener('click', function() {
+                    if (window.innerWidth > 768) {
+                        document.body.classList.toggle('sidebar-collapsed');
+                        // Recalculate map size if map exists
+                        setTimeout(function() {
+                            if (map && typeof map.invalidateSize === 'function') {
+                                map.invalidateSize();
+                            } else if (map && typeof google !== 'undefined' && google.maps && map instanceof google.maps.Map) {
+                                google.maps.event.trigger(map, 'resize');
+                            }
+                        }, 250);
+                    } else {
+                        sidebar.classList.toggle('open');
+                        overlay.classList.toggle('active');
+                    }
+                });
             });
             overlay.addEventListener('click', function() {
                 sidebar.classList.remove('open');

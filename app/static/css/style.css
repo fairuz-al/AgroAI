@@ -1580,3 +1580,178 @@ body:not(.sidebar-collapsed) .sidebar-toggle {
   border-radius: 50%;
   margin-top: -1px;
 }
+
+/* ============================================
+   Redesigned Responsive Layout (Mobile UI)
+   ============================================ */
+
+/* Mobile Top Header Bar */
+.mobile-header-bar {
+  display: none;
+}
+
+/* Responsive Grid Helpers */
+.financial-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.fertilizer-phases-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.xai-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.xai-inputs-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  /* Show Sticky Header Bar on Mobile */
+  .mobile-header-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1.25rem;
+    background: #ffffff;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 85;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .mobile-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .mobile-brand img {
+    height: 28px;
+    width: auto;
+  }
+
+  .mobile-brand span {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--text-primary);
+  }
+
+  .mobile-sidebar-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: var(--radius-sm);
+    transition: background var(--transition);
+  }
+
+  .mobile-sidebar-toggle:hover {
+    background: var(--bg-input);
+    color: var(--primary);
+  }
+
+  .mobile-sidebar-toggle i,
+  .mobile-sidebar-toggle svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  /* Hide Desktop Toggle Button on Mobile */
+  .sidebar-toggle,
+  #sidebar-toggle {
+    display: none !important;
+  }
+
+  /* Re-adjust page header and main padding */
+  .page-header {
+    padding-left: 0 !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.75rem !important;
+  }
+
+  /* Stack layout grids on narrow screen */
+  .financial-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .fertilizer-phases-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .xai-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem;
+  }
+
+  .xai-inputs-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem;
+  }
+
+  /* Landing hero mobile adjustments */
+  .landing-hero {
+    margin: -1rem -1rem 2rem -1rem !important;
+    padding: 3.5rem 1.25rem 6.5rem !important;
+  }
+
+  .hero-waves {
+    height: 70px !important;
+  }
+
+  .hero-brand-text {
+    font-size: 2rem !important;
+  }
+
+  .landing-hero h1 {
+    font-size: 1.8rem !important;
+    letter-spacing: -0.8px !important;
+  }
+
+  .landing-hero p.hero-subtitle {
+    font-size: 0.95rem !important;
+  }
+
+  /* Make actions full width and responsive */
+  .rec-btn {
+    width: 100% !important;
+    justify-content: center;
+    padding: 0.75rem !important;
+    font-size: 0.8rem !important;
+  }
+
+  .history-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch !important;
+    width: 100%;
+    margin-top: 0.5rem;
+    gap: 0.5rem !important;
+  }
+
+  .history-actions a,
+  .history-actions form,
+  .history-actions button {
+    width: 100% !important;
+    justify-content: center;
+    margin-bottom: 0 !important;
+  }
+}

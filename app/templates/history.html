@@ -11,8 +11,19 @@
 </head>
 <body>
 
+    <!-- ========== MOBILE HEADER ========== -->
+    <div class="mobile-header-bar">
+        <div class="mobile-brand">
+            <img src="/static/img/logo.svg" alt="AgroAI logo">
+            <span>AgroAI</span>
+        </div>
+        <button class="mobile-sidebar-toggle sidebar-toggle-btn" aria-label="Toggle sidebar">
+            <i data-lucide="menu"></i>
+        </button>
+    </div>
+
     <!-- ========== SIDEBAR ========== -->
-    <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">☰</button>
+    <button class="sidebar-toggle sidebar-toggle-btn" id="sidebar-toggle" aria-label="Toggle sidebar">☰</button>
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-brand">
@@ -99,8 +110,7 @@
                             <i data-lucide="calendar" style="width: 14px; height: 14px;"></i> {{ item.created_at }}
                         </div>
                     </div>
-                    
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div class="history-actions">
                         <!-- Log Algoritma (XAI) for Local runs -->
                         {% if item.result.xai_logs %}
                         <a href="/xai?history_id={{ item.id }}" class="btn-gps-sync" style="font-size: 0.75rem; padding: 0.35rem 0.75rem; display: inline-flex; align-items: center; gap: 0.3rem; border: 1px solid rgba(16,185,129,0.2); background: rgba(16,185,129,0.05); color: #10b981; text-decoration: none; border-radius: var(--radius-sm); font-weight: 600;">
@@ -193,7 +203,7 @@
                                     <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 0 0 0.75rem 0; line-height: 1.4;">{{ crop.reasoning }}</p>
                                     
                                     <!-- Finance Grid -->
-                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem;">
+                                    <div class="financial-grid">
                                         <div style="padding: 0.5rem; background: var(--primary-bg); border: 1px solid var(--primary-border); border-radius: var(--radius-sm);">
                                             <span style="font-size: 0.6rem; color: var(--text-tertiary); text-transform: uppercase; display: block; font-weight: 600;">Pendapatan Panen</span>
                                             <span style="font-size: 0.85rem; font-weight: 700; color: var(--primary); font-family: var(--font-mono);">{{ crop.harvest_revenue_str }}</span>
@@ -221,7 +231,7 @@
                             <h4 style="font-size: 0.85rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 0.4rem;">
                                 <i data-lucide="sprout" style="width: 16px; height: 16px; color: #10b981;"></i> Rencana Pemupukan Lahan ({{ item.land_area_ha }} ha)
                             </h4>
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.25rem;">
+                            <div class="fertilizer-phases-grid" style="margin-bottom: 1.25rem;">
                                 <div style="background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1rem;">
                                     <h5 style="font-size: 0.85rem; font-weight: 700; color: var(--primary); margin: 0 0 0.5rem 0;">Fase Vegetatif</h5>
                                     <div style="display: flex; flex-direction: column; gap: 0.4rem;">
@@ -317,17 +327,19 @@
         };
 
         // Sidebar toggle
-        var toggle = document.getElementById('sidebar-toggle');
+        var toggles = document.querySelectorAll('.sidebar-toggle-btn');
         var sidebar = document.getElementById('sidebar');
         var overlay = document.getElementById('sidebar-overlay');
-        if (toggle && sidebar && overlay) {
-            toggle.addEventListener('click', function() {
-                if (window.innerWidth > 768) {
-                    document.body.classList.toggle('sidebar-collapsed');
-                } else {
-                    sidebar.classList.toggle('open');
-                    overlay.classList.toggle('active');
-                }
+        if (sidebar && overlay) {
+            toggles.forEach(function(toggle) {
+                toggle.addEventListener('click', function() {
+                    if (window.innerWidth > 768) {
+                        document.body.classList.toggle('sidebar-collapsed');
+                    } else {
+                        sidebar.classList.toggle('open');
+                        overlay.classList.toggle('active');
+                    }
+                });
             });
             overlay.addEventListener('click', function() {
                 sidebar.classList.remove('open');
