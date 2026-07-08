@@ -153,23 +153,12 @@ class FuzzyMembership:
     @classmethod
     def elevation_suitability(cls, input_elev, elev_min, elev_max):
         """Fuzzy elevation compatibility using trapezoidal membership."""
-        if elev_min <= input_elev <= elev_max:
-            center = (elev_min + elev_max) / 2.0
-            half_range = (elev_max - elev_min) / 2.0
-
-            if half_range == 0:
-                return 1.0 if input_elev == elev_min else 0.0
-
-            dist_from_center = abs(input_elev - center) / half_range
-            return cls.trimf(dist_from_center, 0, 0, 1.0)
-        else:
-            margin = 200
-            if input_elev < elev_min:
-                dist = elev_min - input_elev
-                return max(0, 1.0 - dist / margin) * 0.4
-            else:
-                dist = input_elev - elev_max
-                return max(0, 1.0 - dist / margin) * 0.4
+        margin = 200
+        a = max(0, elev_min - margin)
+        b = elev_min
+        c = elev_max
+        d = elev_max + margin
+        return cls.trapmf(input_elev, a, b, c, d)
 
     # --- Price/Market Fuzzy Memberships ---
     @classmethod
